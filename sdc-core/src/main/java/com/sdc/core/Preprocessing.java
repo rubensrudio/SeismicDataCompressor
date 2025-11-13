@@ -83,4 +83,28 @@ public final class Preprocessing {
         }
         return out;
     }
+
+    /**
+     * Desfaz a normalização de [-1,1] para o range [min, max].
+     * Inverso aproximado do normalizeToMinusOneToOne.
+     */
+    public static float[] denormalizeFromMinusOneToOne(float[] normalized, float min, float max) {
+        if (normalized == null || normalized.length == 0) {
+            throw new IllegalArgumentException("normalized must not be null/empty");
+        }
+        float range = max - min;
+        if (range == 0f) {
+            float[] out = new float[normalized.length];
+            Arrays.fill(out, min);
+            return out;
+        }
+        float[] out = new float[normalized.length];
+        for (int i = 0; i < normalized.length; i++) {
+            float v = normalized[i];         // [-1,1]
+            float zeroToOne = (v + 1f) / 2f; // [-1,1] -> [0,1]
+            out[i] = min + zeroToOne * range;
+        }
+        return out;
+    }
+
 }

@@ -45,4 +45,36 @@ public final class SdcFileReader {
             return traces;
         }
     }
+
+    /**
+     * Lê um arquivo .sdc v2 (traços comprimidos) e retorna traços descomprimidos.
+     */
+    public static java.util.List<TraceBlock> readAllCompressed(java.nio.file.Path path) throws java.io.IOException {
+        java.util.Objects.requireNonNull(path, "path");
+        try (java.io.DataInputStream in = new java.io.DataInputStream(
+                new java.io.BufferedInputStream(java.nio.file.Files.newInputStream(path)))) {
+
+            SdcHeader header = SdcHeader.read(in);
+            if (header.version() != 2) {
+                throw new java.io.IOException("Expected SDC version 2, got " + header.version());
+            }
+
+            java.util.List<TraceBlock> traces = new java.util.ArrayList<>(header.traceCount());
+
+            for (int t = 0; t < header.traceCount(); t++) {
+                int traceId = in.readInt();
+                float min = in.readFloat();
+                float max = in.readFloat();
+                int payloadSize = in.readInt();
+                byte[] payload = in.readNBytes(payloadSize);
+
+                CompressedTraceBlock cb = new CompressedTraceBlock(
+                        traceId, min, max, header.samplesPerTrace(), payload);
+
+                TraceBlock tb = TraceBlockCodec.decompress(cb);
+                traces.add(tb);
+            }
+            return traces;
+        }
+    }
 }
