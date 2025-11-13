@@ -1,8 +1,11 @@
 package com.sdc.svc;
 
+import com.sdc.core.CompressionProfile;
 import com.sdc.core.SegyCompression;
-import com.sdc.svc.dto.SegyDtos.*;
-
+import com.sdc.svc.dto.SegyDtos.CompressRequest;
+import com.sdc.svc.dto.SegyDtos.CompressResponse;
+import com.sdc.svc.dto.SegyDtos.DecompressRequest;
+import com.sdc.svc.dto.SegyDtos.DecompressResponse;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
@@ -14,7 +17,18 @@ public class SegyCompressionService {
         Path segy = Path.of(req.segyPath);
         Path sdc  = Path.of(req.sdcPath);
 
-        SegyCompression.CompressionResult result = SegyCompression.compressSegyToSdc(segy, sdc);
+        // Determina o profile:
+        CompressionProfile profile;
+        if (req.fidelityPercent != null) {
+            profile = CompressionProfile.fromFidelityPercent(req.fidelityPercent);
+        } else if (req.profile != null) {
+            profile = CompressionProfile.fromProfileName(req.profile);
+        } else {
+            profile = CompressionProfile.defaultHighQuality();
+        }
+
+        SegyCompression.CompressionResult result =
+                SegyCompression.compressSegyToSdc(segy, sdc, profile);
 
         CompressResponse resp = new CompressResponse();
         resp.segyPath = result.segyPath.toString();
@@ -30,12 +44,17 @@ public class SegyCompressionService {
         resp.ratioFile = result.ratioFile;
         resp.ratioData = result.ratioData;
         resp.savingsPercent = result.savingsPercent;
-        resp.ratio = result.ratioFile; // compatibilidade antiga
+        resp.ratio = result.ratioFile; // compatibilidade
 
         resp.psnrFirstTrace = result.psnrFirstTrace;
         resp.psnrMean = result.psnrMean;
         resp.psnrMin = result.psnrMin;
         resp.psnrMax = result.psnrMax;
+
+        // info do profile
+        resp.fidelityPercentRequested = profile.fidelityPercentRequested();
+        resp.effectiveBits = profile.effectiveBits();
+        resp.deflaterLevel = profile.deflaterLevel();
 
         return resp;
     }

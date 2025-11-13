@@ -23,6 +23,10 @@ public final class TraceBlockCodec {
     private TraceBlockCodec() {}
 
     public static CompressedTraceBlock compress(TraceBlock tb) {
+        return compress(tb, CompressionProfile.defaultHighQuality());
+    }
+
+    public static CompressedTraceBlock compress(TraceBlock tb, CompressionProfile profile) {
         float[] samples = tb.samples();
         int n = samples.length;
 
@@ -37,14 +41,14 @@ public final class TraceBlockCodec {
         // 3) delta
         float[] deltas = Preprocessing.deltaEncode(norm);
 
-        // 4) quantização
-        short[] q = LinearQuantizer.encode(deltas);
+        // 4) quantização, agora respeitando effectiveBits do profile
+        short[] q = LinearQuantizer.encode(deltas, profile);
 
         // 5) short[] -> byte[]
         byte[] rawBytes = shortsToBytes(q);
 
-        // 6) Deflater
-        byte[] compressed = deflate(rawBytes);
+        // 6) Deflater com nível vindo do profile
+        byte[] compressed = deflate(rawBytes, profile.deflaterLevel());
 
         return new CompressedTraceBlock(tb.traceId(), min, max, n, compressed);
     }
@@ -100,24 +104,28 @@ public final class TraceBlockCodec {
     }
 
     static byte[] deflate(byte[] input) {
-        Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION);
+        return deflate(input, java.util.zip.Deflater.BEST_COMPRESSION);
+    }
+
+    static byte[] deflate(byte[] input, int level) {
+        java.util.zip.Deflater deflater = new java.util.zip.Deflater(level);
         deflater.setInput(input);
         deflater.finish();
 
         byte[] buffer = new byte[4096];
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(input.length)) {
+        try (java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream(input.length)) {
             while (!deflater.finished()) {
                 int count = deflater.deflate(buffer);
                 baos.write(buffer, 0, count);
             }
             return baos.toByteArray();
-        } catch (IOException e) {
-            // ByteArrayOutputStream não deve lançar IOException, mas por segurança:
+        } catch (java.io.IOException e) {
             throw new RuntimeException("Unexpected IO error during deflate", e);
         } finally {
             deflater.end();
         }
     }
+
 
     static byte[] inflate(byte[] input) {
         Inflater inflater = new Inflater();
@@ -140,4 +148,6 @@ public final class TraceBlockCodec {
             inflater.end();
         }
     }
+
+    
 }

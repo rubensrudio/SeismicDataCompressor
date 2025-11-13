@@ -69,11 +69,16 @@ public final class SegyCompression {
         }
     }
 
+    public static CompressionResult compressSegyToSdc(Path segyPath, Path sdcPath) throws IOException {
+        return compressSegyToSdc(segyPath, sdcPath, CompressionProfile.defaultHighQuality());
+    }
+
     /**
      * Lê um SEG-Y, comprime os traços para .sdc v2 e retorna métricas.
      */
-    public static CompressionResult compressSegyToSdc(Path segyPath, Path sdcPath) throws IOException {
-        // Lê o SEG-Y (traces já vêm como TraceBlock com float[])
+    public static CompressionResult compressSegyToSdc(Path segyPath,
+                                                      Path sdcPath,
+                                                      CompressionProfile profile) throws IOException {
         SegyIO.SegyDataset dataset = SegyIO.read(segyPath);
         List<TraceBlock> traceBlocks = dataset.traces;
 
@@ -81,12 +86,10 @@ public final class SegyCompression {
         int samplesPerTrace = dataset.samplesPerTrace;
 
         long segyBytes = Files.size(segyPath);
-
-        // apenas dados de traços (sem headers): ns * nTraces * 4 bytes
         long rawDataBytes = (long) traceCount * samplesPerTrace * 4L;
 
-        // Escreve .sdc v2 usando nosso codec
-        SdcFileWriter.writeCompressed(sdcPath, traceBlocks);
+        // Usa o profile aqui
+        SdcFileWriter.writeCompressed(sdcPath, traceBlocks, profile);
 
         long sdcBytes = Files.size(sdcPath);
 
@@ -120,7 +123,6 @@ public final class SegyCompression {
                 }
                 sum += psnr;
             }
-
             psnrMean = sum / n;
         }
 

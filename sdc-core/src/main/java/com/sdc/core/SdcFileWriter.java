@@ -54,18 +54,25 @@ public final class SdcFileWriter {
         }
     }
 
+    public static void writeCompressed(java.nio.file.Path target, java.util.List<TraceBlock> traces)
+            throws java.io.IOException {
+        writeCompressed(target, traces, CompressionProfile.defaultHighQuality());
+    }
+
     /**
-     * Versão v2: grava traços comprimidos usando TraceBlockCodec.
+     * Versão v2: grava traços comprimidos usando TraceBlockCodec e um perfil de compressão.
      * Layout:
      *  [MAGIC][version=2][traceCount][samplesPerTrace]
      *  repetido para cada traço:
      *    [traceId][min][max][payloadSize][payloadBytes...]
      */
-    public static void writeCompressed(java.nio.file.Path target, java.util.List<TraceBlock> traces)
-            throws java.io.IOException {
+    public static void writeCompressed(java.nio.file.Path target,
+                                       java.util.List<TraceBlock> traces,
+                                       CompressionProfile profile) throws java.io.IOException {
 
         java.util.Objects.requireNonNull(target, "target");
         java.util.Objects.requireNonNull(traces, "traces");
+        java.util.Objects.requireNonNull(profile, "profile");
         if (traces.isEmpty()) throw new IllegalArgumentException("traces must not be empty");
 
         int traceCount = traces.size();
@@ -84,7 +91,7 @@ public final class SdcFileWriter {
             header.write(out);
 
             for (TraceBlock tb : traces) {
-                CompressedTraceBlock cb = TraceBlockCodec.compress(tb);
+                CompressedTraceBlock cb = TraceBlockCodec.compress(tb, profile);
                 byte[] payload = cb.payload();
 
                 out.writeInt(cb.traceId());
@@ -96,4 +103,5 @@ public final class SdcFileWriter {
             out.flush();
         }
     }
+
 }

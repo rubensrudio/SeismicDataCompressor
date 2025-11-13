@@ -7,7 +7,16 @@ public final class SegyDtos {
     public static final class CompressRequest {
         public String segyPath;
         public String sdcPath;
+
+        // NOVO: perfil de compressão
+        // Ex.: "HIGH_QUALITY", "BALANCED", "HIGH_COMPRESSION"
+        public String profile;
+
+        // NOVO: percentual de fidelidade desejado (0..100).
+        // Se informado, tem prioridade sobre "profile".
+        public Double fidelityPercent;
     }
+
 
     public static final class CompressResponse {
         public String segyPath;
@@ -29,6 +38,11 @@ public final class SegyDtos {
         public double psnrMean;
         public double psnrMin;
         public double psnrMax;
+
+        // NOVO: info sobre o profile usado
+        public double fidelityPercentRequested;
+        public int effectiveBits;
+        public int deflaterLevel;
     }
 
     public static final class DecompressRequest {

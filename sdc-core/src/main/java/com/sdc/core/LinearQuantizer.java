@@ -13,17 +13,33 @@ public final class LinearQuantizer {
     // usamos todo o range de short, exceto os extremos absolutos
     private static final float MAX_ABS = 32766f;
 
-    /**
-     * Converte amostras normalizadas em [-1,1] para short.
-     */
     public static short[] encode(float[] normalized) {
+        return encode(normalized, CompressionProfile.defaultHighQuality());
+    }
+
+    /**
+     * Quantiza considerando o número de bits efetivos do profile.
+     * Se effectiveBits=16 -> comportamento atual (sem perda extra).
+     * Se menor que 16 -> zera bits menos significativos.
+     */
+    public static short[] encode(float[] normalized, CompressionProfile profile) {
         short[] out = new short[normalized.length];
+        int effectiveBits = profile.effectiveBits();
+
         for (int i = 0; i < normalized.length; i++) {
             float v = normalized[i];
             if (v > 1f) v = 1f;
             if (v < -1f) v = -1f;
             int q = Math.round(v * MAX_ABS);
-            out[i] = (short) q;
+            short s = (short) q;
+
+            if (effectiveBits < 16) {
+                int bitsToDrop = 16 - effectiveBits;
+                int mask = ~((1 << bitsToDrop) - 1);
+                s = (short) (s & mask);
+            }
+
+            out[i] = s;
         }
         return out;
     }
