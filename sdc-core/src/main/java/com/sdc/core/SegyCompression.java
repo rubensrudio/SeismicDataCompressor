@@ -82,6 +82,9 @@ public final class SegyCompression {
         SegyIO.SegyDataset dataset = SegyIO.read(segyPath);
         List<TraceBlock> traceBlocks = dataset.traces;
 
+        // Dump do SEG-Y original
+        SegyDump.dumpFromDataset(segyPath, dataset);
+
         int traceCount = dataset.traceCount();
         int samplesPerTrace = dataset.samplesPerTrace;
 
@@ -164,5 +167,8 @@ public final class SegyCompression {
 
         // Escreve novo SEG-Y com headers originais e samples reconstruídos
         SegyIO.write(outSegyPath, template, traces);
+
+        // Gera dump TXT + CSV do SEG-Y reconstruído
+        SegyDump.dumpFromFile(outSegyPath);
     }
 }

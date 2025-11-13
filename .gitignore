@@ -23,3 +23,5 @@ sdc-ui/dist/
 # Formats Excluded
 *.sdc
 *.sgy
+*.csv
+*.txt
