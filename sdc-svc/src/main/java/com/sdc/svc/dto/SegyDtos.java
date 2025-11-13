@@ -12,10 +12,23 @@ public final class SegyDtos {
     public static final class CompressResponse {
         public String segyPath;
         public String sdcPath;
+
         public long segyBytes;
         public long sdcBytes;
-        public double ratio;
+        public long rawDataBytes;
+
+        public int traceCount;
+        public int samplesPerTrace;
+
+        public double ratio;            // manter compatibilidade: igual a ratioFile
+        public double ratioFile;        // sdcBytes / segyBytes
+        public double ratioData;        // sdcBytes / rawDataBytes
+        public double savingsPercent;   // (1 - ratioFile) * 100
+
         public double psnrFirstTrace;
+        public double psnrMean;
+        public double psnrMin;
+        public double psnrMax;
     }
 
     public static final class DecompressRequest {

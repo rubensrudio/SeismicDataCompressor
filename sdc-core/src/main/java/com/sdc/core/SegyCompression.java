@@ -21,20 +21,51 @@ public final class SegyCompression {
     public static final class CompressionResult {
         public final Path segyPath;
         public final Path sdcPath;
-        public final long segyBytes;
-        public final long sdcBytes;
-        public final double ratio;
-        public final double psnrFirstTrace;
 
-        public CompressionResult(Path segyPath, Path sdcPath,
-                                 long segyBytes, long sdcBytes,
-                                 double ratio, double psnrFirstTrace) {
+        public final long segyBytes;      // tamanho total do arquivo SEG-Y
+        public final long sdcBytes;       // tamanho total do .sdc
+        public final long rawDataBytes;   // apenas dados dos traços (ns * nTraces * 4)
+
+        public final int traceCount;
+        public final int samplesPerTrace;
+
+        public final double ratioFile;    // sdcBytes / segyBytes
+        public final double ratioData;    // sdcBytes / rawDataBytes
+        public final double savingsPercent; // (1 - ratioFile) * 100
+
+        public final double psnrFirstTrace;
+        public final double psnrMean;
+        public final double psnrMin;
+        public final double psnrMax;
+
+        public CompressionResult(Path segyPath,
+                                Path sdcPath,
+                                long segyBytes,
+                                long sdcBytes,
+                                long rawDataBytes,
+                                int traceCount,
+                                int samplesPerTrace,
+                                double ratioFile,
+                                double ratioData,
+                                double savingsPercent,
+                                double psnrFirstTrace,
+                                double psnrMean,
+                                double psnrMin,
+                                double psnrMax) {
             this.segyPath = segyPath;
             this.sdcPath = sdcPath;
             this.segyBytes = segyBytes;
             this.sdcBytes = sdcBytes;
-            this.ratio = ratio;
+            this.rawDataBytes = rawDataBytes;
+            this.traceCount = traceCount;
+            this.samplesPerTrace = samplesPerTrace;
+            this.ratioFile = ratioFile;
+            this.ratioData = ratioData;
+            this.savingsPercent = savingsPercent;
             this.psnrFirstTrace = psnrFirstTrace;
+            this.psnrMean = psnrMean;
+            this.psnrMin = psnrMin;
+            this.psnrMax = psnrMax;
         }
     }
 
@@ -42,28 +73,73 @@ public final class SegyCompression {
      * Lê um SEG-Y, comprime os traços para .sdc v2 e retorna métricas.
      */
     public static CompressionResult compressSegyToSdc(Path segyPath, Path sdcPath) throws IOException {
+        // Lê o SEG-Y (traces já vêm como TraceBlock com float[])
         SegyIO.SegyDataset dataset = SegyIO.read(segyPath);
+        List<TraceBlock> traceBlocks = dataset.traces;
 
-        List<TraceBlock> traceBlocks = dataset.traces; // já está como TraceBlock
+        int traceCount = dataset.traceCount();
+        int samplesPerTrace = dataset.samplesPerTrace;
 
         long segyBytes = Files.size(segyPath);
+
+        // apenas dados de traços (sem headers): ns * nTraces * 4 bytes
+        long rawDataBytes = (long) traceCount * samplesPerTrace * 4L;
 
         // Escreve .sdc v2 usando nosso codec
         SdcFileWriter.writeCompressed(sdcPath, traceBlocks);
 
         long sdcBytes = Files.size(sdcPath);
-        double ratio = (double) sdcBytes / (double) segyBytes;
 
-        // PSNR do primeiro traço (apenas como métrica de qualidade)
-        double psnr = Double.NaN;
+        double ratioFile = (double) sdcBytes / (double) segyBytes;
+        double ratioData = (double) sdcBytes / (double) rawDataBytes;
+        double savingsPercent = (1.0 - ratioFile) * 100.0;
+
+        double psnrFirst = Double.NaN;
+        double psnrMean = Double.NaN;
+        double psnrMin = Double.NaN;
+        double psnrMax = Double.NaN;
+
         if (!traceBlocks.isEmpty()) {
             List<TraceBlock> rec = SdcFileReader.readAllCompressed(sdcPath);
-            float[] orig = traceBlocks.get(0).samples();
-            float[] dec  = rec.get(0).samples();
-            psnr = LinearQuantizer.psnr(orig, dec);
+            int n = Math.min(traceBlocks.size(), rec.size());
+
+            double sum = 0.0;
+
+            for (int i = 0; i < n; i++) {
+                float[] orig = traceBlocks.get(i).samples();
+                float[] dec  = rec.get(i).samples();
+                double psnr = LinearQuantizer.psnr(orig, dec);
+
+                if (i == 0) {
+                    psnrFirst = psnr;
+                    psnrMin = psnr;
+                    psnrMax = psnr;
+                } else {
+                    if (psnr < psnrMin) psnrMin = psnr;
+                    if (psnr > psnrMax) psnrMax = psnr;
+                }
+                sum += psnr;
+            }
+
+            psnrMean = sum / n;
         }
 
-        return new CompressionResult(segyPath, sdcPath, segyBytes, sdcBytes, ratio, psnr);
+        return new CompressionResult(
+                segyPath,
+                sdcPath,
+                segyBytes,
+                sdcBytes,
+                rawDataBytes,
+                traceCount,
+                samplesPerTrace,
+                ratioFile,
+                ratioData,
+                savingsPercent,
+                psnrFirst,
+                psnrMean,
+                psnrMin,
+                psnrMax
+        );
     }
 
     /**

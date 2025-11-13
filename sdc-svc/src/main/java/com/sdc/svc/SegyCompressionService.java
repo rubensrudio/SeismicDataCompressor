@@ -19,10 +19,24 @@ public class SegyCompressionService {
         CompressResponse resp = new CompressResponse();
         resp.segyPath = result.segyPath.toString();
         resp.sdcPath = result.sdcPath.toString();
+
         resp.segyBytes = result.segyBytes;
         resp.sdcBytes = result.sdcBytes;
-        resp.ratio = result.ratio;
+        resp.rawDataBytes = result.rawDataBytes;
+
+        resp.traceCount = result.traceCount;
+        resp.samplesPerTrace = result.samplesPerTrace;
+
+        resp.ratioFile = result.ratioFile;
+        resp.ratioData = result.ratioData;
+        resp.savingsPercent = result.savingsPercent;
+        resp.ratio = result.ratioFile; // compatibilidade antiga
+
         resp.psnrFirstTrace = result.psnrFirstTrace;
+        resp.psnrMean = result.psnrMean;
+        resp.psnrMin = result.psnrMin;
+        resp.psnrMax = result.psnrMax;
+
         return resp;
     }
 
