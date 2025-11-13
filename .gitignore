@@ -20,3 +20,6 @@ Thumbs.db
 # Node (UI)
 sdc-ui/node_modules/
 sdc-ui/dist/
+# Formats Excluded
+*.sdc
+*.sgy
