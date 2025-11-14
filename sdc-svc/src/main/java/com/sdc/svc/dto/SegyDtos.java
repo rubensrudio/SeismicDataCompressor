@@ -58,4 +58,29 @@ public final class SegyDtos {
         public boolean success;
         public String message;
     }
+
+    public static final class Compress3DRequest {
+        public String segyPath;
+        public String sdcPath;
+
+        // Perfil de compressão (igual ao 1D)
+        public String profile;
+        public Double fidelityPercent;
+
+        // Dimensões do bloco 3D (inline x xline x time)
+        // Se null/0, caímos em defaults (ex.: 8x8xT)
+        public Integer blockInline;
+        public Integer blockXline;
+        public Integer blockTime;
+    }
+
+    public static final class Decompress3DRequest {
+        public String sdcPath;
+        public String templateSegyPath;
+        public String outSegyPath;
+
+        // Mesmo profile/fidelity da compressão, para manter simetria
+        public String profile;
+        public Double fidelityPercent;
+    }
 }
