@@ -1,63 +1,73 @@
 package com.sdc.core;
 
-/**
- * Quantização linear simples de [-1,1] para short (16 bits).
- *
- * NÃO é a versão final de produção; serve como etapa inicial
- * para experimentos e benchmarks.
- */
 public final class LinearQuantizer {
 
     private LinearQuantizer() {}
 
-    // usamos todo o range de short, exceto os extremos absolutos
-    private static final float MAX_ABS = 32766f;
+    // compat: usa profile default (16 bits)
+    private static final CompressionProfile DEFAULT_PROFILE =
+            CompressionProfile.defaultHighQuality();
 
+    /** Versão antiga (compat) – assume profile default (16 bits) */
     public static short[] encode(float[] normalized) {
-        return encode(normalized, CompressionProfile.defaultHighQuality());
+        return encode(normalized, DEFAULT_PROFILE);
     }
 
     /**
-     * Quantiza considerando o número de bits efetivos do profile.
-     * Se effectiveBits=16 -> comportamento atual (sem perda extra).
-     * Se menor que 16 -> zera bits menos significativos.
+     * Quantização linear em [-1,1], respeitando o número de bits efetivos.
+     * effectiveBits deve estar entre 2 e 16.
      */
     public static short[] encode(float[] normalized, CompressionProfile profile) {
+        int bits = profile.effectiveBits();
+        if (bits < 2 || bits > 16) {
+            throw new IllegalArgumentException("effectiveBits must be between 2 and 16, got " + bits);
+        }
+
+        int maxQ = (1 << (bits - 1)) - 1; // exemplo: 16 bits -> 32767, 15 bits -> 16383
         short[] out = new short[normalized.length];
-        int effectiveBits = profile.effectiveBits();
 
         for (int i = 0; i < normalized.length; i++) {
             float v = normalized[i];
+
+            // clamp em [-1,1]
             if (v > 1f) v = 1f;
             if (v < -1f) v = -1f;
-            int q = Math.round(v * MAX_ABS);
-            short s = (short) q;
 
-            if (effectiveBits < 16) {
-                int bitsToDrop = 16 - effectiveBits;
-                int mask = ~((1 << bitsToDrop) - 1);
-                s = (short) (s & mask);
-            }
+            int q = Math.round(v * maxQ);
 
-            out[i] = s;
+            if (q > maxQ) q = maxQ;
+            if (q < -maxQ) q = -maxQ;
+
+            out[i] = (short) q;
         }
         return out;
     }
 
-    /**
-     * Converte de volta de short para float aproximado em [-1,1].
-     */
+    /** Versão antiga (compat) – assume 16 bits */
     public static float[] decode(short[] quantized) {
+        return decode(quantized, 16);
+    }
+
+    /**
+     * Dequantização genérica: short -> float em [-1,1],
+     * usando o mesmo número de bits da quantização.
+     */
+    public static float[] decode(short[] quantized, int bits) {
+        if (bits < 2 || bits > 16) {
+            throw new IllegalArgumentException("bits must be between 2 and 16, got " + bits);
+        }
+        int maxQ = (1 << (bits - 1)) - 1;
+        float inv = 1.0f / (float) maxQ;
+
         float[] out = new float[quantized.length];
         for (int i = 0; i < quantized.length; i++) {
-            out[i] = quantized[i] / MAX_ABS;
+            out[i] = quantized[i] * inv;
         }
         return out;
     }
 
-    /**
-     * Erro quadrático médio entre dois sinais.
-     */
+    // ---- MSE / PSNR permanecem iguais ----
+
     public static double mse(float[] a, float[] b) {
         if (a.length != b.length) {
             throw new IllegalArgumentException("arrays must have same length");
@@ -70,13 +80,10 @@ public final class LinearQuantizer {
         return acc / a.length;
     }
 
-    /**
-     * PSNR simples em dB, considerando valores em [-1,1].
-     */
     public static double psnr(float[] original, float[] reconstructed) {
         double mse = mse(original, reconstructed);
         if (mse == 0.0) return Double.POSITIVE_INFINITY;
-        double max = 1.0; // max amplitude após normalização
+        double max = 1.0; // assume [-1,1]
         return 10.0 * Math.log10((max * max) / mse);
     }
 }
