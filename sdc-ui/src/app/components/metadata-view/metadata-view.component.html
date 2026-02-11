@@ -1,24 +1,24 @@
 <div class="metadata-view">
-  <h2>Informações do Arquivo</h2>
+  <h2>File Information</h2>
   
   <div class="info-grid">
     <div class="info-item">
-      <label>Arquivo:</label>
+      <label>File:</label>
       <span>{{ info.sdcPath }}</span>
     </div>
     
     <div class="info-item">
-      <label>Versão SDC:</label>
+      <label>SDC Version:</label>
       <span>{{ info.version }}</span>
     </div>
     
     <div class="info-item">
-      <label>Número de Traços:</label>
+      <label>Trace Count:</label>
       <span>{{ info.traceCount | number }}</span>
     </div>
     
     <div class="info-item">
-      <label>Amostras por Traço:</label>
+      <label>Samples per Trace:</label>
       <span>{{ info.samplesPerTrace | number }}</span>
     </div>
 
@@ -54,14 +54,14 @@
       </div>
 
       <div class="info-item">
-        <label>Número de Blocos:</label>
+        <label>Block Count:</label>
         <span>{{ info.blockCount }}</span>
       </div>
     </ng-container>
   </div>
 
   <div class="type-badge">
-    <span *ngIf="info.version === 2">Compressão 2D (por traço)</span>
-    <span *ngIf="info.version === 3">Compressão 3D (volumétrica)</span>
+    <span *ngIf="info.version === 2">2D Compression (trace-wise)</span>
+    <span *ngIf="info.version === 3">3D Compression (volumetric)</span>
   </div>
 </div>

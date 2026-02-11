@@ -1,21 +1,21 @@
 <div class="trace-view">
-  <h2>Visualizador de Traços (2D)</h2>
+  <h2>Trace Viewer (2D)</h2>
   
   <div class="controls">
     <div class="control-group">
-      <label>Intervalo de Traços:</label>
+      <label>Trace Range:</label>
       <input type="number" [(ngModel)]="traceStart" placeholder="0" min="0">
       <input type="number" [(ngModel)]="traceCount" placeholder="10" min="1" max="1000" value="50">
     </div>
 
     <div class="control-group">
-      <label>Intervalo de Amostras:</label>
+      <label>Sample Range:</label>
       <input type="number" [(ngModel)]="sampleStart" placeholder="0" min="0">
-      <input type="number" [(ngModel)]="sampleCount" placeholder="todos" min="1">
+      <input type="number" [(ngModel)]="sampleCount" placeholder="all" min="1">
     </div>
 
     <button (click)="loadSlice()" [disabled]="loading">
-      {{ loading ? 'Carregando...' : 'Carregar' }}
+      {{ loading ? 'Loading...' : 'Load' }}
     </button>
   </div>
 
@@ -29,8 +29,8 @@
     </div>
     
     <div class="info">
-      <p>Traços: {{ sliceData.traceStart }}-{{ sliceData.traceStart + sliceData.traceCount }}</p>
-      <p>Amostras: {{ sliceData.sampleStart }}-{{ sliceData.sampleStart + sliceData.sampleCount }}</p>
+      <p>Traces: {{ sliceData.traceStart }}-{{ sliceData.traceStart + sliceData.traceCount }}</p>
+      <p>Samples: {{ sliceData.sampleStart }}-{{ sliceData.sampleStart + sliceData.sampleCount }}</p>
     </div>
   </ng-container>
 </div>

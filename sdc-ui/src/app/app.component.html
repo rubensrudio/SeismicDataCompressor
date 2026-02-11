@@ -10,7 +10,7 @@
     </section>
 
     <ng-container *ngIf="loading">
-      <div class="loading">Carregando...</div>
+      <div class="loading">Loading...</div>
     </ng-container>
 
     <ng-container *ngIf="error">
@@ -23,7 +23,7 @@
           *ngIf="isSdc2D"
           [class.active]="activeTab === 'trace'"
           (click)="activeTab = 'trace'">
-          Traços (2D)
+          Traces (2D)
         </button>
         <button 
           *ngIf="isSdc3D"
@@ -34,7 +34,7 @@
         <button 
           [class.active]="activeTab === 'metadata'"
           (click)="activeTab = 'metadata'">
-          Metadados
+          Metadata
         </button>
       </nav>
 

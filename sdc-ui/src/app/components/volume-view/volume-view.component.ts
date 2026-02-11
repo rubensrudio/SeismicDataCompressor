@@ -39,7 +39,7 @@ export class VolumeViewComponent implements OnInit {
         setTimeout(() => this.renderCanvas(), 100);
       },
       error: (err) => {
-        this.error = 'Erro ao carregar slice: ' + (err.message || err);
+        this.error = 'Error loading slice: ' + (err.message || err);
         this.loading = false;
       }
     });

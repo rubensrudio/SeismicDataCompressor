@@ -7,7 +7,7 @@ import { SdcViewerService, ViewerInfoResponse } from './services/sdc-viewer.serv
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'SDC Viewer';
+  title = 'SDC Viewer - Seismic Data Compressor';
   selectedFile: string | null = null;
   fileInfo: ViewerInfoResponse | null = null;
   loading = false;
@@ -34,7 +34,7 @@ export class AppComponent {
           this.loading = false;
         },
         error: (err) => {
-          this.error = 'Erro ao carregar arquivo: ' + err.message;
+          this.error = 'Error loading file: ' + err.message;
           this.loading = false;
         }
       });

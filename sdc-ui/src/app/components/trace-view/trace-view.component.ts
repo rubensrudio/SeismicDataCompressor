@@ -41,7 +41,7 @@ export class TraceViewComponent implements OnInit {
         setTimeout(() => this.renderCanvas(), 100);
       },
       error: (err) => {
-        this.error = 'Erro ao carregar traços: ' + (err.message || err);
+        this.error = 'Error loading traces: ' + (err.message || err);
         this.loading = false;
       }
     });
