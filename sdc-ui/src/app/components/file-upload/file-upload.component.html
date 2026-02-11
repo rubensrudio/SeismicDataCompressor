@@ -1,0 +1,13 @@
+<div class="file-upload">
+  <label for="filePath">Caminho do arquivo .sdc:</label>
+  <div class="input-group">
+    <input 
+      #filePathInput
+      type="text" 
+      id="filePath" 
+      placeholder="d:/dados/seismic.sdc"
+      (keydown.enter)="onSubmit(filePathInput.value)">
+    <button (click)="onSubmit(filePathInput.value)">Abrir</button>
+  </div>
+  <small>Exemplo: d:/Users/dados/volume.sdc</small>
+</div>

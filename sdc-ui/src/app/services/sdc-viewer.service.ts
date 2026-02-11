@@ -1,0 +1,110 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+export interface ViewerInfoRequest {
+  sdcPath: string;
+}
+
+export interface ViewerInfoResponse {
+  sdcPath: string;
+  version: number;
+  traceCount: number;
+  samplesPerTrace: number;
+  inlineCount?: number;
+  xlineCount?: number;
+  timeCount?: number;
+  blockInline?: number;
+  blockXline?: number;
+  blockTime?: number;
+  blockCount?: number;
+}
+
+export interface TraceSliceRequest {
+  sdcPath: string;
+  traceStart?: number;
+  traceCount?: number;
+  sampleStart?: number;
+  sampleCount?: number;
+}
+
+export interface TraceSliceResponse {
+  sdcPath: string;
+  version: number;
+  traceStart: number;
+  traceCount: number;
+  sampleStart: number;
+  sampleCount: number;
+  traceIds: number[];
+  samples: number[][];
+}
+
+export interface VolumeSliceRequest {
+  sdcPath: string;
+  axis?: string;
+  index?: number;
+  start0?: number;
+  count0?: number;
+  start1?: number;
+  count1?: number;
+  profile?: string;
+  fidelityPercent?: number;
+}
+
+export interface VolumeSliceResponse {
+  sdcPath: string;
+  version: number;
+  axis: string;
+  index: number;
+  inlineCount: number;
+  xlineCount: number;
+  timeCount: number;
+  dim0: number;
+  dim1: number;
+  data: number[][];
+  start0: number;
+  count0: number;
+  start1: number;
+  count1: number;
+  min: number;
+  max: number;
+}
+
+export interface CacheInfo {
+  blocksInCache: number;
+  blockCapacity: number;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class SdcViewerService {
+
+  private apiUrl = '/api/viewer';
+
+  constructor(private http: HttpClient) { }
+
+  getInfo(request: ViewerInfoRequest): Observable<ViewerInfoResponse> {
+    return this.http.post<ViewerInfoResponse>(`${this.apiUrl}/info`, request);
+  }
+
+  getTraceSlice(request: TraceSliceRequest): Observable<TraceSliceResponse> {
+    return this.http.post<TraceSliceResponse>(`${this.apiUrl}/trace-slice`, request);
+  }
+
+  getVolumeSlice(request: VolumeSliceRequest): Observable<VolumeSliceResponse> {
+    return this.http.post<VolumeSliceResponse>(`${this.apiUrl}/volume-slice`, request);
+  }
+
+  getCacheInfo(sdcPath: string): Observable<CacheInfo> {
+    return this.http.get<CacheInfo>(`${this.apiUrl}/cache-info`, {
+      params: { sdcPath }
+    });
+  }
+
+  clearCache(sdcPath: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/cache-clear`, {
+      params: { sdcPath }
+    });
+  }
+}

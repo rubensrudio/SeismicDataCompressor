@@ -1,0 +1,59 @@
+<div class="app-container">
+  <header class="app-header">
+    <h1>{{ title }}</h1>
+    <p class="subtitle">AI-Enhanced Seismic Data Compressor - Viewer</p>
+  </header>
+
+  <main class="app-main">
+    <section class="file-select-section">
+      <app-file-upload (fileSelected)="onFileSelected($event)"></app-file-upload>
+    </section>
+
+    <ng-container *ngIf="loading">
+      <div class="loading">Carregando...</div>
+    </ng-container>
+
+    <ng-container *ngIf="error">
+      <div class="error">{{ error }}</div>
+    </ng-container>
+
+    <ng-container *ngIf="fileInfo && !loading">
+      <nav class="tabs">
+        <button 
+          *ngIf="isSdc2D"
+          [class.active]="activeTab === 'trace'"
+          (click)="activeTab = 'trace'">
+          Traços (2D)
+        </button>
+        <button 
+          *ngIf="isSdc3D"
+          [class.active]="activeTab === 'volume'"
+          (click)="activeTab = 'volume'">
+          Volume (3D)
+        </button>
+        <button 
+          [class.active]="activeTab === 'metadata'"
+          (click)="activeTab = 'metadata'">
+          Metadados
+        </button>
+      </nav>
+
+      <div class="content">
+        <app-metadata-view 
+          *ngIf="activeTab === 'metadata'"
+          [fileInfo]="fileInfo">
+        </app-metadata-view>
+
+        <app-trace-view 
+          *ngIf="activeTab === 'trace' && isSdc2D"
+          [sdcPath]="selectedFile!">
+        </app-trace-view>
+
+        <app-volume-view 
+          *ngIf="activeTab === 'volume' && isSdc3D"
+          [sdcPath]="selectedFile!">
+        </app-volume-view>
+      </div>
+    </ng-container>
+  </main>
+</div>

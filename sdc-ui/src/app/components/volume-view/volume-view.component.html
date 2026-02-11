@@ -1,0 +1,48 @@
+<div class="volume-view">
+  <h2>Visualizador de Volume (3D)</h2>
+  
+  <div class="controls">
+    <div class="control-group">
+      <label>Eixo:</label>
+      <select [(ngModel)]="axis">
+        <option value="TIME">Time (Inline x Xline)</option>
+        <option value="INLINE">Inline (Xline x Time)</option>
+        <option value="XLINE">Xline (Inline x Time)</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>Índice:</label>
+      <input type="number" [(ngModel)]="index" placeholder="0" min="0">
+    </div>
+
+    <div class="control-group">
+      <label>Perfil:</label>
+      <select [(ngModel)]="profile">
+        <option value="HIGH_QUALITY">Alta Qualidade</option>
+        <option value="BALANCED">Balanceado</option>
+        <option value="HIGH_COMPRESSION">Alta Compressão</option>
+      </select>
+    </div>
+
+    <button (click)="loadSlice()" [disabled]="loading">
+      {{ loading ? 'Carregando...' : 'Carregar Slice' }}
+    </button>
+  </div>
+
+  <ng-container *ngIf="error">
+    <div class="error">{{ error }}</div>
+  </ng-container>
+
+  <ng-container *ngIf="sliceData && !loading">
+    <div class="slice-info">
+      <p>Eixo: {{ sliceData.axis }} | Índice: {{ sliceData.index }}</p>
+      <p>Dimensões: {{ sliceData.dim0 }} x {{ sliceData.dim1 }}</p>
+      <p>Min/Max: {{ sliceData.min.toFixed(4) }} / {{ sliceData.max.toFixed(4) }}</p>
+    </div>
+
+    <div class="canvas-container">
+      <canvas #canvas></canvas>
+    </div>
+  </ng-container>
+</div>

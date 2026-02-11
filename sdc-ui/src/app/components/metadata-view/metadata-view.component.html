@@ -1,0 +1,67 @@
+<div class="metadata-view">
+  <h2>Informações do Arquivo</h2>
+  
+  <div class="info-grid">
+    <div class="info-item">
+      <label>Arquivo:</label>
+      <span>{{ info.sdcPath }}</span>
+    </div>
+    
+    <div class="info-item">
+      <label>Versão SDC:</label>
+      <span>{{ info.version }}</span>
+    </div>
+    
+    <div class="info-item">
+      <label>Número de Traços:</label>
+      <span>{{ info.traceCount | number }}</span>
+    </div>
+    
+    <div class="info-item">
+      <label>Amostras por Traço:</label>
+      <span>{{ info.samplesPerTrace | number }}</span>
+    </div>
+
+    <ng-container *ngIf="info.version === 3">
+      <div class="info-item">
+        <label>Inline Count:</label>
+        <span>{{ info.inlineCount }}</span>
+      </div>
+      
+      <div class="info-item">
+        <label>Xline Count:</label>
+        <span>{{ info.xlineCount }}</span>
+      </div>
+      
+      <div class="info-item">
+        <label>Time Samples:</label>
+        <span>{{ info.timeCount }}</span>
+      </div>
+
+      <div class="info-item">
+        <label>Block Inline:</label>
+        <span>{{ info.blockInline }}</span>
+      </div>
+
+      <div class="info-item">
+        <label>Block Xline:</label>
+        <span>{{ info.blockXline }}</span>
+      </div>
+
+      <div class="info-item">
+        <label>Block Time:</label>
+        <span>{{ info.blockTime }}</span>
+      </div>
+
+      <div class="info-item">
+        <label>Número de Blocos:</label>
+        <span>{{ info.blockCount }}</span>
+      </div>
+    </ng-container>
+  </div>
+
+  <div class="type-badge">
+    <span *ngIf="info.version === 2">Compressão 2D (por traço)</span>
+    <span *ngIf="info.version === 3">Compressão 3D (volumétrica)</span>
+  </div>
+</div>
