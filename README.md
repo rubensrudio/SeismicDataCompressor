@@ -35,6 +35,19 @@ mvn spring-boot:run
 
 The service will start on `http://localhost:8080`
 
+### API Documentation (Swagger/OpenAPI)
+
+Interactive API documentation is available via Swagger UI:
+
+- **Swagger UI**: `http://localhost:8080/swagger-ui.html`
+- **OpenAPI JSON**: `http://localhost:8080/api-docs`
+
+The Swagger interface provides:
+- Complete API specification with request/response schemas
+- Interactive endpoint testing
+- Detailed descriptions for all operations
+- Example request payloads
+
 ### REST API Endpoints
 
 #### Compression/Decompression API (`/api/segy`)
