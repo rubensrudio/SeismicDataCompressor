@@ -1,0 +1,72 @@
+.trace-view {
+  h2 {
+    margin-top: 0;
+  }
+
+  .controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      label {
+        font-weight: 500;
+      }
+
+      input {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: 80px;
+      }
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+
+      &:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .error {
+    background: #ffebee;
+    color: #c62828;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+
+  .canvas-container {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    overflow: auto;
+
+    canvas {
+      display: block;
+    }
+  }
+
+  .info {
+    color: #666;
+    font-size: 0.9rem;
+
+    p {
+      margin: 0.25rem 0;
+    }
+  }
+}
