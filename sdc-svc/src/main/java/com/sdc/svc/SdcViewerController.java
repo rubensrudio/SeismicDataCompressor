@@ -2,6 +2,8 @@ package com.sdc.svc;
 
 import com.sdc.svc.dto.SegyDtos.TraceSliceRequest;
 import com.sdc.svc.dto.SegyDtos.TraceSliceResponse;
+import com.sdc.svc.dto.SegyDtos.TraceHeadersRequest;
+import com.sdc.svc.dto.SegyDtos.TraceHeadersResponse;
 import com.sdc.svc.dto.SegyDtos.ViewerInfoRequest;
 import com.sdc.svc.dto.SegyDtos.ViewerInfoResponse;
 import com.sdc.svc.dto.SegyDtos.VolumeSliceRequest;
@@ -31,6 +33,11 @@ public class SdcViewerController {
     @PostMapping("/volume-slice")
     public VolumeSliceResponse volumeSlice(@RequestBody VolumeSliceRequest req) throws Exception {
         return service.volumeSlice(req);
+    }
+
+    @PostMapping("/trace-headers")
+    public TraceHeadersResponse traceHeaders(@RequestBody TraceHeadersRequest req) throws Exception {
+        return service.traceHeaders(req);
     }
 
     @GetMapping("/cache-info")

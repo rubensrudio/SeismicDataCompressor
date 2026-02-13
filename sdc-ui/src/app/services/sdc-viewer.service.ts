@@ -11,6 +11,7 @@ export interface ViewerInfoResponse {
   version: number;
   traceCount: number;
   samplesPerTrace: number;
+  sampleFormat?: string;
   inlineCount?: number;
   xlineCount?: number;
   timeCount?: number;
@@ -75,6 +76,23 @@ export interface CacheInfo {
   blockCapacity: number;
 }
 
+export interface TraceHeader {
+  traceNumber: number;
+  inline: number;
+  crossline: number;
+}
+
+export interface TraceHeadersRequest {
+  sdcPath: string;
+}
+
+export interface TraceHeadersResponse {
+  sdcPath: string;
+  version: number;
+  traceCount: number;
+  headers: TraceHeader[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -106,5 +124,9 @@ export class SdcViewerService {
     return this.http.delete<void>(`${this.apiUrl}/cache-clear`, {
       params: { sdcPath }
     });
+  }
+
+  getTraceHeaders(request: TraceHeadersRequest): Observable<TraceHeadersResponse> {
+    return this.http.post<TraceHeadersResponse>(`${this.apiUrl}/trace-headers`, request);
   }
 }

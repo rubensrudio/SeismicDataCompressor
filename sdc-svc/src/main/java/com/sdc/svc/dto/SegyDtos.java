@@ -95,6 +95,7 @@ public final class SegyDtos {
         public int version;
         public int traceCount;
         public int samplesPerTrace;
+        public String sampleFormat;  // Ex: "IEEE float 32 (5)", "IBM float (1)"
 
         // Somente para .sdc v3 (3D)
         public Integer inlineCount;
@@ -164,5 +165,28 @@ public final class SegyDtos {
 
         public float min;
         public float max;
+    }
+
+    public static final class TraceHeadersRequest {
+        public String sdcPath;
+    }
+
+    public static final class TraceHeader {
+        public int traceNumber;
+        public int inline;
+        public int crossline;
+
+        public TraceHeader(int traceNumber, int inline, int crossline) {
+            this.traceNumber = traceNumber;
+            this.inline = inline;
+            this.crossline = crossline;
+        }
+    }
+
+    public static final class TraceHeadersResponse {
+        public String sdcPath;
+        public int version;
+        public int traceCount;
+        public TraceHeader[] headers;
     }
 }

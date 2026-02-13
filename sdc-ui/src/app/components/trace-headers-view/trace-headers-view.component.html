@@ -1,0 +1,47 @@
+<div class="trace-headers-view">
+  <h2>Trace Headers View</h2>
+
+  <div class="controls">
+    <p>Total Traces: {{ headers.length }}</p>
+    <p>Displaying: {{ displayedHeaders.length }} of {{ headers.length }}</p>
+  </div>
+
+  <ng-container *ngIf="loading">
+    <div class="loading">Loading trace headers...</div>
+  </ng-container>
+
+  <ng-container *ngIf="error">
+    <div class="error">{{ error }}</div>
+  </ng-container>
+
+  <ng-container *ngIf="!loading && headers.length > 0">
+    <div class="table-container">
+      <table class="headers-table">
+        <thead>
+          <tr>
+            <th>Trace Number</th>
+            <th>Inline</th>
+            <th>Crossline</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let header of displayedHeaders">
+            <td>{{ header.traceNumber }}</td>
+            <td>{{ header.inline }}</td>
+            <td>{{ header.crossline }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-container *ngIf="hasMore()">
+      <button (click)="loadMore()" class="load-more-btn">
+        Load More ({{ displayedHeaders.length }}/{{ headers.length }})
+      </button>
+    </ng-container>
+  </ng-container>
+
+  <ng-container *ngIf="!loading && headers.length === 0 && !error">
+    <div class="empty-message">No trace headers available</div>
+  </ng-container>
+</div>

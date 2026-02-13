@@ -1,0 +1,117 @@
+.trace-headers-view {
+  h2 {
+    margin-top: 0;
+    color: #333;
+  }
+
+  .controls {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background: #f5f5f5;
+    border-radius: 4px;
+
+    p {
+      margin: 0.25rem 0;
+      color: #666;
+      font-size: 0.9rem;
+    }
+  }
+
+  .loading {
+    padding: 2rem;
+    text-align: center;
+    color: #999;
+  }
+
+  .error {
+    background: #ffebee;
+    color: #c62828;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+
+  .empty-message {
+    padding: 2rem;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+  }
+
+  .table-container {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: auto;
+    max-height: 600px;
+    margin-bottom: 1rem;
+  }
+
+  .headers-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+
+    thead {
+      background: #667eea;
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+
+      th {
+        padding: 0.75rem;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #5568d3;
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid #eee;
+
+        &:hover {
+          background: #f9f9f9;
+        }
+
+        td {
+          padding: 0.5rem 0.75rem;
+          text-align: right;
+          font-family: monospace;
+
+          &:first-child {
+            text-align: left;
+            font-weight: 500;
+            color: #667eea;
+          }
+
+          &:nth-child(2),
+          &:nth-child(3) {
+            text-align: left;
+          }
+        }
+      }
+    }
+  }
+
+  .load-more-btn {
+    padding: 0.75rem 1.5rem;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.3s ease;
+
+    &:hover {
+      background: #5568d3;
+    }
+
+    &:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+  }
+}

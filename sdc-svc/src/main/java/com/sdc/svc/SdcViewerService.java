@@ -9,6 +9,9 @@ import com.sdc.core.TraceBlockCodec;
 import com.sdc.core.VolumeBlockCache;
 import com.sdc.svc.dto.SegyDtos.TraceSliceRequest;
 import com.sdc.svc.dto.SegyDtos.TraceSliceResponse;
+import com.sdc.svc.dto.SegyDtos.TraceHeadersRequest;
+import com.sdc.svc.dto.SegyDtos.TraceHeadersResponse;
+import com.sdc.svc.dto.SegyDtos.TraceHeader;
 import com.sdc.svc.dto.SegyDtos.ViewerInfoRequest;
 import com.sdc.svc.dto.SegyDtos.ViewerInfoResponse;
 import com.sdc.svc.dto.SegyDtos.VolumeSliceRequest;
@@ -46,6 +49,7 @@ public class SdcViewerService {
             resp.version = header.version();
             resp.traceCount = header.traceCount();
             resp.samplesPerTrace = header.samplesPerTrace();
+            resp.sampleFormat = "IEEE float 32 (5)";  // Default para .sdc v2 e v3
 
             if (header.version() == 3) {
                 resp.inlineCount = in.readInt();
@@ -209,6 +213,63 @@ public class SdcViewerService {
             return new CacheInfo(0, cacheBlockCapacity);
         }
         return new CacheInfo(cache.size(), cache.capacity());
+    }
+
+    public TraceHeadersResponse traceHeaders(TraceHeadersRequest req) throws IOException {
+        Path path = Path.of(req.sdcPath);
+        try (DataInputStream in = new DataInputStream(
+                new BufferedInputStream(Files.newInputStream(path)))) {
+
+            SdcHeader header = SdcHeader.read(in);
+
+            TraceHeadersResponse resp = new TraceHeadersResponse();
+            resp.sdcPath = req.sdcPath;
+            resp.version = header.version();
+            resp.traceCount = header.traceCount();
+
+            // Ler headers dos traces do arquivo .sdc
+            TraceHeader[] headers = new TraceHeader[header.traceCount()];
+
+            if (header.version() == 2) {
+                // Para .sdc v2, ler cada trace comprimido e extrair headers
+                for (int i = 0; i < header.traceCount(); i++) {
+                    int traceNum = in.readInt();
+                    int inlineNum = in.readInt();
+                    int xlineNum = in.readInt();
+
+                    headers[i] = new TraceHeader(traceNum, inlineNum, xlineNum);
+
+                    // Skip trace data (CompressedTraceBlock)
+                    int dataSize = in.readInt();
+                    in.skipBytes(dataSize);
+                }
+            } else if (header.version() == 3) {
+                // Para .sdc v3, ler metadata de dimensões e blocos
+                int inlineCount = in.readInt();
+                int xlineCount = in.readInt();
+                int timeCount = in.readInt();
+                int blockInline = in.readInt();
+                int blockXline = in.readInt();
+                int blockTime = in.readInt();
+                int blockCount = in.readInt();
+
+                // Para 3D, gerar headers baseado na grid
+                int traceIdx = 0;
+                for (int inline = 0; inline < inlineCount && traceIdx < header.traceCount(); inline++) {
+                    for (int xline = 0; xline < xlineCount && traceIdx < header.traceCount(); xline++) {
+                        headers[traceIdx] = new TraceHeader(
+                            traceIdx + 1,  // traceNumber (1-indexed)
+                            inline + 1,     // inline (1-indexed)
+                            xline + 1       // crossline (1-indexed)
+                        );
+                        traceIdx++;
+                    }
+                }
+            }
+
+            resp.headers = headers;
+            return resp;
+        }
     }
 
     public static final class CacheInfo {

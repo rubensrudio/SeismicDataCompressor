@@ -36,6 +36,11 @@
           (click)="activeTab = 'metadata'">
           Metadata
         </button>
+        <button 
+          [class.active]="activeTab === 'headers'"
+          (click)="activeTab = 'headers'">
+          Trace Headers View
+        </button>
       </nav>
 
       <div class="content">
@@ -53,6 +58,11 @@
           *ngIf="activeTab === 'volume' && isSdc3D"
           [sdcPath]="selectedFile!">
         </app-volume-view>
+
+        <app-trace-headers-view 
+          *ngIf="activeTab === 'headers'"
+          [sdcPath]="selectedFile!">
+        </app-trace-headers-view>
       </div>
     </ng-container>
   </main>

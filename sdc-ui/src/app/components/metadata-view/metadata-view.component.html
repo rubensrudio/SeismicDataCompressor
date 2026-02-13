@@ -21,6 +21,11 @@
       <label>Samples per Trace:</label>
       <span>{{ info.samplesPerTrace | number }}</span>
     </div>
+    
+    <div class="info-item">
+      <label>Sample Format:</label>
+      <span>{{ info.sampleFormat }}</span>
+    </div>
 
     <ng-container *ngIf="info.version === 3">
       <div class="info-item">

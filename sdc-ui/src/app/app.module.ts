@@ -8,6 +8,7 @@ import { FileUploadComponent } from './components/file-upload/file-upload.compon
 import { MetadataViewComponent } from './components/metadata-view/metadata-view.component';
 import { TraceViewComponent } from './components/trace-view/trace-view.component';
 import { VolumeViewComponent } from './components/volume-view/volume-view.component';
+import { TraceHeadersViewComponent } from './components/trace-headers-view/trace-headers-view.component';
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import { VolumeViewComponent } from './components/volume-view/volume-view.compon
     FileUploadComponent,
     MetadataViewComponent,
     TraceViewComponent,
-    VolumeViewComponent
+    VolumeViewComponent,
+    TraceHeadersViewComponent
   ],
   imports: [
     BrowserModule,
