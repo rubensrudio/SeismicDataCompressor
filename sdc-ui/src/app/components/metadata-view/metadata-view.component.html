@@ -1,97 +1,65 @@
 <div class="metadata-view">
-  <h2>File Information</h2>
-  
-  <div class="info-grid">
-    <div class="info-item">
-      <label>File:</label>
-      <span>{{ info.sdcPath }}</span>
-    </div>
-    
-    <div class="info-item">
-      <label>SDC Version:</label>
-      <span>{{ info.version }}</span>
-    </div>
-    
-    <div class="info-item">
-      <label>Trace Count:</label>
-      <span>{{ info.traceCount | number }}</span>
-    </div>
-    
-    <div class="info-item">
-      <label>Samples per Trace:</label>
-      <span>{{ info.samplesPerTrace | number }}</span>
-    </div>
-    
-    <div class="info-item">
-      <label>Sample Format:</label>
-      <span>{{ info.sampleFormat }}</span>
-    </div>
 
-    <ng-container *ngIf="info.version === 3">
+  <div>
+    <p class="section-label">File info</p>
+    <div class="info-grid">
       <div class="info-item">
-        <label>Inline Count:</label>
-        <span>{{ info.inlineCount }}</span>
+        <label>File</label>
+        <span>{{ info.sdcPath }}</span>
       </div>
-      
       <div class="info-item">
-        <label>Xline Count:</label>
-        <span>{{ info.xlineCount }}</span>
+        <label>SDC Version</label>
+        <span>v{{ info.version }}</span>
       </div>
-      
       <div class="info-item">
-        <label>Time Samples:</label>
-        <span>{{ info.timeCount }}</span>
+        <label>Traces</label>
+        <span>{{ info.traceCount | number }}</span>
       </div>
-
       <div class="info-item">
-        <label>Block Inline:</label>
-        <span>{{ info.blockInline }}</span>
+        <label>Samples / Trace</label>
+        <span>{{ info.samplesPerTrace | number }}</span>
       </div>
-
       <div class="info-item">
-        <label>Block Xline:</label>
-        <span>{{ info.blockXline }}</span>
+        <label>Sample Format</label>
+        <span>{{ info.sampleFormat }}</span>
       </div>
-
-      <div class="info-item">
-        <label>Block Time:</label>
-        <span>{{ info.blockTime }}</span>
-      </div>
-
-      <div class="info-item">
-        <label>Block Count:</label>
-        <span>{{ info.blockCount }}</span>
-      </div>
-    </ng-container>
+      <ng-container *ngIf="info.version === 3">
+        <div class="info-item"><label>Inline Count</label><span>{{ info.inlineCount }}</span></div>
+        <div class="info-item"><label>Xline Count</label><span>{{ info.xlineCount }}</span></div>
+        <div class="info-item"><label>Time Samples</label><span>{{ info.timeCount }}</span></div>
+        <div class="info-item"><label>Block Inline</label><span>{{ info.blockInline }}</span></div>
+        <div class="info-item"><label>Block Xline</label><span>{{ info.blockXline }}</span></div>
+        <div class="info-item"><label>Block Time</label><span>{{ info.blockTime }}</span></div>
+        <div class="info-item"><label>Block Count</label><span>{{ info.blockCount }}</span></div>
+      </ng-container>
+    </div>
   </div>
 
-  <mat-card class="metrics-card">
-    <mat-card-header>
-      <mat-card-title>Compression Metrics</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="metrics-grid">
-        <div class="metric-item">
-          <label>Compression Ratio:</label>
-          <span>{{ info.compressionRatio != null ? (info.compressionRatio | number:'1.2-2') + '×' : '—' }}</span>
-        </div>
-        <div class="metric-item">
-          <label>Avg PSNR:</label>
-          <span>{{ info.avgPsnr != null ? (info.avgPsnr | number:'1.1-1') + ' dB' : '—' }}</span>
-        </div>
-        <div class="metric-item">
-          <label>Effective Bits:</label>
-          <span>{{ info.effectiveBits != null ? info.effectiveBits : '—' }}</span>
-        </div>
+  <div class="metrics-section">
+    <p class="section-label">Compression metrics</p>
+    <div class="metrics-grid">
+      <div class="metric-item">
+        <label>Ratio</label>
+        <span>{{ info.compressionRatio != null ? (info.compressionRatio | number:'1.2-2') + '×' : '—' }}</span>
       </div>
-      <mat-chip-set *ngIf="info.avgPsnr != null && info.avgPsnr < 30">
-        <mat-chip color="warn" highlighted>Low fidelity — consider a higher quality profile</mat-chip>
-      </mat-chip-set>
-    </mat-card-content>
-  </mat-card>
-
-  <div class="type-badge">
-    <span *ngIf="info.version === 2">2D Compression (trace-wise)</span>
-    <span *ngIf="info.version === 3">3D Compression (volumetric)</span>
+      <div class="metric-item">
+        <label>Avg PSNR</label>
+        <span>{{ info.avgPsnr != null ? (info.avgPsnr | number:'1.1-1') + ' dB' : '—' }}</span>
+      </div>
+      <div class="metric-item">
+        <label>Effective Bits</label>
+        <span>{{ info.effectiveBits != null ? info.effectiveBits : '—' }}</span>
+      </div>
+    </div>
+    <div *ngIf="info.avgPsnr != null && info.avgPsnr < 30" class="warn-chip">
+      <mat-icon>warning</mat-icon>
+      Low fidelity — consider a higher quality profile
+    </div>
   </div>
+
+  <div>
+    <span class="type-badge" *ngIf="info.version === 2">2D · trace-wise</span>
+    <span class="type-badge" *ngIf="info.version === 3">3D · volumetric</span>
+  </div>
+
 </div>

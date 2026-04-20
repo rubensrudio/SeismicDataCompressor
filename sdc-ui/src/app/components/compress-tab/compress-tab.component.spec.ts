@@ -126,7 +126,7 @@ describe('CompressTabComponent', () => {
     expect(component.result).toEqual(MOCK_RESPONSE);
     expect(component.state).toBe('success');
 
-    const card = fixture.debugElement.query(By.css('mat-card'));
+    const card = fixture.debugElement.query(By.css('.result-card'));
     expect(card).toBeTruthy();
     expect(card.nativeElement.textContent).toContain('2.50');
     expect(card.nativeElement.textContent).toContain('42.1');
@@ -167,7 +167,7 @@ describe('CompressTabComponent', () => {
     const emitted: string[] = [];
     component.viewResult.subscribe(v => emitted.push(v));
 
-    const viewBtn = fixture.debugElement.queryAll(By.css('mat-card button[mat-button]'))[0];
+    const viewBtn = fixture.debugElement.queryAll(By.css('.view-result-btn'))[0];
     viewBtn.nativeElement.click();
     tick();
     fixture.detectChanges();
