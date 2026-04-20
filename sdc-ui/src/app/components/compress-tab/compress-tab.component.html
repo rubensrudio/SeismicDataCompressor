@@ -1,0 +1,47 @@
+<div class="compress-tab">
+  <section class="compress-tab__file-section">
+    <h3>Select SEG-Y File</h3>
+    <app-file-selector extension="sgy" (fileSelected)="onSgySelected($event)"></app-file-selector>
+  </section>
+
+  <section class="compress-tab__options-section">
+    <h3>Compression Profile</h3>
+    <mat-button-toggle-group [(value)]="selectedProfile" aria-label="Compression profile">
+      <mat-button-toggle value="high_quality">High Quality</mat-button-toggle>
+      <mat-button-toggle value="balanced">Balanced</mat-button-toggle>
+      <mat-button-toggle value="high_compression">High Compression</mat-button-toggle>
+    </mat-button-toggle-group>
+
+    <div class="compress-tab__3d-toggle">
+      <mat-checkbox [(ngModel)]="is3D">3D file</mat-checkbox>
+    </div>
+  </section>
+
+  <section class="compress-tab__action-section">
+    <button
+      mat-raised-button
+      color="primary"
+      [disabled]="!selectedSgy || submitting"
+      (click)="submit()">
+      <span *ngIf="!submitting">Compress</span>
+      <span *ngIf="submitting">Compressing...</span>
+    </button>
+  </section>
+
+  <mat-progress-bar *ngIf="submitting" mode="indeterminate" class="compress-tab__progress"></mat-progress-bar>
+
+  <mat-card *ngIf="result" class="compress-tab__result-card">
+    <mat-card-header>
+      <mat-card-title>Compression Result</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <p>Ratio: {{ result.ratio | number:'1.2-2' }}&times;</p>
+      <p>Avg PSNR: {{ result.psnrMean | number:'1.1-1' }} dB</p>
+      <p>Effective bits: {{ result.effectiveBits }}</p>
+      <p>Time: {{ elapsedMs }}ms</p>
+      <button mat-button color="accent" (click)="viewResultClicked()">View Result &#x2192;</button>
+    </mat-card-content>
+  </mat-card>
+
+  <app-error-display [error]="appError" (retry)="onRetry()"></app-error-display>
+</div>
