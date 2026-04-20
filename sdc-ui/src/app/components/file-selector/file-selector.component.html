@@ -1,0 +1,15 @@
+<mat-form-field *ngIf="!fallbackMode">
+  <mat-label>Select file</mat-label>
+  <mat-select [(value)]="selected" (selectionChange)="onSelect($event)">
+    <mat-optgroup label="Recent" *ngIf="recentFiles.length">
+      <mat-option *ngFor="let f of recentFiles" [value]="f">{{ f }}</mat-option>
+    </mat-optgroup>
+    <mat-optgroup label="Available">
+      <mat-option *ngFor="let f of availableFiles" [value]="f">{{ f }}</mat-option>
+    </mat-optgroup>
+  </mat-select>
+</mat-form-field>
+<mat-form-field *ngIf="fallbackMode">
+  <input matInput placeholder="Server path (fallback)" [(ngModel)]="manualPath">
+  <button mat-icon-button matSuffix (click)="onManualSubmit()"><mat-icon>send</mat-icon></button>
+</mat-form-field>

@@ -129,4 +129,9 @@ export class SdcViewerService {
   getTraceHeaders(request: TraceHeadersRequest): Observable<TraceHeadersResponse> {
     return this.http.post<TraceHeadersResponse>(`${this.apiUrl}/trace-headers`, request);
   }
+
+  getAvailableFiles(ext: 'sdc' | 'sgy'): Observable<{ files: string[] }> {
+    const path = ext === 'sgy' ? '/api/viewer/sgy-files' : '/api/viewer/files';
+    return this.http.get<{ files: string[] }>(path);
+  }
 }
