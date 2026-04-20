@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SdcViewerService, ViewerInfoResponse } from './services/sdc-viewer.service';
 
-const VALID_TABS = new Set(['metadata', 'trace', 'volume', 'headers']);
+const VALID_TABS = new Set(['metadata', 'trace', 'volume', 'headers', 'compress']);
 
 @Component({
   selector: 'app-root',
@@ -71,6 +71,12 @@ export class AppComponent implements OnInit {
           this.loading = false;
         }
       });
+  }
+
+  onViewResult(basename: string) {
+    this.selectedFile = basename;
+    this.setTab('metadata');
+    this.loadFileInfo();
   }
 
   get isSdc2D(): boolean {

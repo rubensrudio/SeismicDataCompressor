@@ -74,6 +74,20 @@ export interface VolumeSliceResponse {
   max: number;
 }
 
+export interface CompressResponse {
+  segyPath?: string;
+  sdcPath?: string;
+  segyBytes: number;
+  sdcBytes: number;
+  traceCount: number;
+  samplesPerTrace: number;
+  ratio: number;
+  ratioFile: number;
+  savingsPercent: number;
+  psnrMean: number;
+  effectiveBits: number;
+}
+
 export interface CacheInfo {
   blocksInCache: number;
   blockCapacity: number;
@@ -136,5 +150,13 @@ export class SdcViewerService {
   getAvailableFiles(ext: 'sdc' | 'sgy'): Observable<{ files: string[] }> {
     const path = ext === 'sgy' ? '/api/viewer/sgy-files' : '/api/viewer/files';
     return this.http.get<{ files: string[] }>(path);
+  }
+
+  compress(req: { sgyFile: string; profile: string; fidelityPercent?: number }): Observable<CompressResponse> {
+    return this.http.post<CompressResponse>('/api/segy/compress', req);
+  }
+
+  compress3d(req: { sgyFile: string; profile: string; fidelityPercent?: number }): Observable<CompressResponse> {
+    return this.http.post<CompressResponse>('/api/segy/compress3d', req);
   }
 }

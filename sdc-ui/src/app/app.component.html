@@ -5,65 +5,84 @@
   </header>
 
   <main class="app-main">
-    <section class="file-select-section">
-      <app-file-upload (fileSelected)="onFileSelected($event)"></app-file-upload>
-    </section>
+    <nav class="tabs tabs--top-level">
+      <button
+        [class.active]="activeTab === 'compress'"
+        (click)="setTab('compress')">
+        Compress
+      </button>
+      <button
+        [class.active]="activeTab !== 'compress'"
+        (click)="setTab('metadata')">
+        View / Metadata
+      </button>
+    </nav>
 
-    <ng-container *ngIf="loading">
-      <div class="loading">Loading...</div>
+    <ng-container *ngIf="activeTab === 'compress'">
+      <app-compress-tab (viewResult)="onViewResult($event)"></app-compress-tab>
     </ng-container>
 
-    <ng-container *ngIf="error">
-      <div class="error">{{ error }}</div>
-    </ng-container>
+    <ng-container *ngIf="activeTab !== 'compress'">
+      <section class="file-select-section">
+        <app-file-selector extension="sdc" (fileSelected)="onFileSelected($event)"></app-file-selector>
+      </section>
 
-    <ng-container *ngIf="fileInfo && !loading">
-      <nav class="tabs">
-        <button 
-          *ngIf="isSdc2D"
-          [class.active]="activeTab === 'trace'"
-          (click)="activeTab = 'trace'">
-          Traces (2D)
-        </button>
-        <button 
-          *ngIf="isSdc3D"
-          [class.active]="activeTab === 'volume'"
-          (click)="activeTab = 'volume'">
-          Volume (3D)
-        </button>
-        <button 
-          [class.active]="activeTab === 'metadata'"
-          (click)="activeTab = 'metadata'">
-          Metadata
-        </button>
-        <button 
-          [class.active]="activeTab === 'headers'"
-          (click)="activeTab = 'headers'">
-          Trace Headers View
-        </button>
-      </nav>
+      <ng-container *ngIf="loading">
+        <div class="loading">Loading...</div>
+      </ng-container>
 
-      <div class="content">
-        <app-metadata-view 
-          *ngIf="activeTab === 'metadata'"
-          [fileInfo]="fileInfo">
-        </app-metadata-view>
+      <ng-container *ngIf="error">
+        <div class="error">{{ error }}</div>
+      </ng-container>
 
-        <app-trace-view 
-          *ngIf="activeTab === 'trace' && isSdc2D"
-          [sdcPath]="selectedFile!">
-        </app-trace-view>
+      <ng-container *ngIf="fileInfo && !loading">
+        <nav class="tabs">
+          <button
+            *ngIf="isSdc2D"
+            [class.active]="activeTab === 'trace'"
+            (click)="setTab('trace')">
+            Traces (2D)
+          </button>
+          <button
+            *ngIf="isSdc3D"
+            [class.active]="activeTab === 'volume'"
+            (click)="setTab('volume')">
+            Volume (3D)
+          </button>
+          <button
+            [class.active]="activeTab === 'metadata'"
+            (click)="setTab('metadata')">
+            Metadata
+          </button>
+          <button
+            [class.active]="activeTab === 'headers'"
+            (click)="setTab('headers')">
+            Trace Headers View
+          </button>
+        </nav>
 
-        <app-volume-view 
-          *ngIf="activeTab === 'volume' && isSdc3D"
-          [sdcPath]="selectedFile!">
-        </app-volume-view>
+        <div class="content">
+          <app-metadata-view
+            *ngIf="activeTab === 'metadata'"
+            [fileInfo]="fileInfo">
+          </app-metadata-view>
 
-        <app-trace-headers-view 
-          *ngIf="activeTab === 'headers'"
-          [sdcPath]="selectedFile!">
-        </app-trace-headers-view>
-      </div>
+          <app-trace-view
+            *ngIf="activeTab === 'trace' && isSdc2D"
+            [sdcPath]="selectedFile!">
+          </app-trace-view>
+
+          <app-volume-view
+            *ngIf="activeTab === 'volume' && isSdc3D"
+            [sdcPath]="selectedFile!">
+          </app-volume-view>
+
+          <app-trace-headers-view
+            *ngIf="activeTab === 'headers'"
+            [sdcPath]="selectedFile!">
+          </app-trace-headers-view>
+        </div>
+      </ng-container>
     </ng-container>
   </main>
 </div>

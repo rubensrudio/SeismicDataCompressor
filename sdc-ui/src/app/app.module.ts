@@ -11,6 +11,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
 import { AppComponent } from './app.component';
 import { FileUploadComponent } from './components/file-upload/file-upload.component';
@@ -20,6 +23,7 @@ import { VolumeViewComponent } from './components/volume-view/volume-view.compon
 import { TraceHeadersViewComponent } from './components/trace-headers-view/trace-headers-view.component';
 import { FileSelectorComponent } from './components/file-selector/file-selector.component';
 import { ErrorDisplayComponent } from './components/error-display/error-display.component';
+import { CompressTabComponent } from './components/compress-tab/compress-tab.component';
 
 @NgModule({
   declarations: [
@@ -30,7 +34,8 @@ import { ErrorDisplayComponent } from './components/error-display/error-display.
     VolumeViewComponent,
     TraceHeadersViewComponent,
     FileSelectorComponent,
-    ErrorDisplayComponent
+    ErrorDisplayComponent,
+    CompressTabComponent
   ],
   imports: [
     BrowserModule,
@@ -45,6 +50,9 @@ import { ErrorDisplayComponent } from './components/error-display/error-display.
     MatButtonModule,
     MatCardModule,
     MatChipsModule,
+    MatProgressBarModule,
+    MatCheckboxModule,
+    MatButtonToggleModule,
     RouterModule.forRoot([])
   ],
   providers: [],
