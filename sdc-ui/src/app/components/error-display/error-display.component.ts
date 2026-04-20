@@ -11,8 +11,7 @@ export class ErrorDisplayComponent {
   @Output() retry = new EventEmitter<void>();
 
   get cardClass(): string {
-    if (!this.error) return '';
-    return this.error.kind === 'client' ? 'error-card--amber' : 'error-card--red';
+    return this.error ? `error-panel--${this.error.kind}` : '';
   }
 
   get iconName(): string {

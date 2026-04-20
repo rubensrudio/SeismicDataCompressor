@@ -3,6 +3,7 @@ import { MetadataViewComponent } from './metadata-view.component';
 import { ViewerInfoResponse } from '../../services/sdc-viewer.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonModule } from '@angular/common';
 
@@ -30,6 +31,7 @@ describe('MetadataViewComponent', () => {
         BrowserAnimationsModule,
         MatCardModule,
         MatChipsModule,
+        MatIconModule,
       ],
     }).compileComponents();
 
@@ -55,20 +57,20 @@ describe('MetadataViewComponent', () => {
 
   it('should show warning chip when avgPsnr is below 30', () => {
     createComponent({ avgPsnr: 25 });
-    const chip = fixture.nativeElement.querySelector('mat-chip');
+    const chip = fixture.nativeElement.querySelector('.warn-chip');
     expect(chip).toBeTruthy();
     expect(chip.textContent).toContain('Low fidelity');
   });
 
   it('should not show warning chip when avgPsnr is 30 or above', () => {
     createComponent({ avgPsnr: 30 });
-    const chip = fixture.nativeElement.querySelector('mat-chip');
+    const chip = fixture.nativeElement.querySelector('.warn-chip');
     expect(chip).toBeNull();
   });
 
   it('should not show warning chip when avgPsnr is null/undefined', () => {
     createComponent();
-    const chip = fixture.nativeElement.querySelector('mat-chip');
+    const chip = fixture.nativeElement.querySelector('.warn-chip');
     expect(chip).toBeNull();
   });
 });

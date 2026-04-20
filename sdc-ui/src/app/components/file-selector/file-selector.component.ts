@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { SdcViewerService } from '../../services/sdc-viewer.service';
 
 const RECENT_KEY = 'sdc.recentFiles';
@@ -13,6 +13,8 @@ export class FileSelectorComponent implements OnInit {
 
   @Input() extension: 'sdc' | 'sgy' = 'sdc';
   @Output() fileSelected = new EventEmitter<string>();
+
+  @ViewChild('nativeFilePicker') nativeFilePicker!: ElementRef<HTMLInputElement>;
 
   availableFiles: string[] = [];
   recentFiles: string[] = [];
@@ -34,9 +36,7 @@ export class FileSelectorComponent implements OnInit {
           this.recentFiles = this.loadRecentFiles(files);
         }
       },
-      error: () => {
-        this.fallbackMode = true;
-      }
+      error: () => { this.fallbackMode = true; }
     });
   }
 
@@ -53,9 +53,22 @@ export class FileSelectorComponent implements OnInit {
     }
   }
 
+  openFilePicker(): void {
+    this.nativeFilePicker.nativeElement.click();
+  }
+
+  onNativeFileSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) {
+      // Fill input with just the filename — backend resolves against dataRoot
+      this.manualPath = file.name;
+    }
+    // Reset so same file can be re-picked
+    (event.target as HTMLInputElement).value = '';
+  }
+
   private loadRecentFiles(serverFiles: string[]): string[] {
     const stored = this.getStoredRecents();
-    // Remove stale entries not in server list
     const valid = stored.filter(f => serverFiles.includes(f));
     this.persistRecents(valid);
     return valid.slice(0, MAX_RECENT);
@@ -75,9 +88,7 @@ export class FileSelectorComponent implements OnInit {
       if (!raw) return [];
       const parsed = JSON.parse(raw);
       return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
+    } catch { return []; }
   }
 
   private persistRecents(recents: string[]): void {

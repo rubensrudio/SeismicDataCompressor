@@ -1,9 +1,10 @@
-<mat-card *ngIf="error" [class]="cardClass">
-  <mat-card-content>
-    <mat-icon>{{ iconName }}</mat-icon>
-    <span>{{ errorMessage }}</span>
-  </mat-card-content>
-  <mat-card-actions>
-    <button mat-button (click)="retry.emit()">Retry</button>
-  </mat-card-actions>
-</mat-card>
+<div *ngIf="error" class="error-panel" [ngClass]="'error-panel--' + error.kind">
+  <mat-icon>{{ iconName }}</mat-icon>
+  <div class="error-panel__body">
+    <span class="error-panel__message">{{ errorMessage }}</span>
+    <button class="error-panel__retry" (click)="retry.emit()">
+      <mat-icon>refresh</mat-icon>
+      Retry
+    </button>
+  </div>
+</div>

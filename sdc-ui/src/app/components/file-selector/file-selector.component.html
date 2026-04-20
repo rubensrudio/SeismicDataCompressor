@@ -1,5 +1,6 @@
+<!-- Managed dropdown mode -->
 <ng-container *ngIf="!fallbackMode">
-  <mat-form-field appearance="outline">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
     <mat-label>Select {{ extension === 'sgy' ? 'SEG-Y' : 'SDC' }} file</mat-label>
     <mat-select [(value)]="selected" (selectionChange)="onSelect($event)">
       <mat-optgroup label="Recent" *ngIf="recentFiles.length">
@@ -9,27 +10,43 @@
         <mat-option *ngFor="let f of availableFiles" [value]="f">{{ f }}</mat-option>
       </mat-optgroup>
     </mat-select>
-    <mat-hint>Files listed from configured data directory</mat-hint>
   </mat-form-field>
 </ng-container>
 
+<!-- Fallback mode: no files configured -->
 <ng-container *ngIf="fallbackMode">
-  <div class="fallback-state">
-    <div class="fallback-state__notice">
+  <div class="fallback">
+    <div class="fallback__notice">
       <mat-icon>folder_off</mat-icon>
-      <span>No files found. Configure <code>sdc.data.root</code> in application.properties, or enter a path manually:</span>
+      <span>
+        No files found in <code>sdc.data.root</code>.
+        Browse for a file below or enter its path manually.
+      </span>
     </div>
-    <mat-form-field appearance="outline" class="fallback-state__input">
-      <mat-label>File path</mat-label>
-      <input matInput
-             [(ngModel)]="manualPath"
-             placeholder="e.g. C:\data\basic90.{{ extension }}"
-             (keydown.enter)="onManualSubmit()">
-    </mat-form-field>
-    <button mat-flat-button color="primary"
-            [disabled]="!manualPath.trim()"
-            (click)="onManualSubmit()">
-      Load File
-    </button>
+    <div class="fallback__input-row">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="fallback__field">
+        <mat-label>File path</mat-label>
+        <input matInput
+               [(ngModel)]="manualPath"
+               placeholder="e.g. C:\data\basic90.{{ extension }}"
+               (keydown.enter)="onManualSubmit()">
+      </mat-form-field>
+      <button class="fallback__browse-btn" (click)="openFilePicker()" title="Browse…">
+        <mat-icon>folder_open</mat-icon>
+        Browse
+      </button>
+      <button class="fallback__load-btn"
+              [disabled]="!manualPath.trim()"
+              (click)="onManualSubmit()">
+        Load
+      </button>
+    </div>
   </div>
 </ng-container>
+
+<!-- Hidden native file input -->
+<input #nativeFilePicker
+       type="file"
+       [accept]="'.' + extension"
+       style="display:none"
+       (change)="onNativeFileSelected($event)">

@@ -25,3 +25,5 @@ sdc-ui/dist/
 *.sgy
 *.csv
 *.txt
+.specs/
+.claude/
