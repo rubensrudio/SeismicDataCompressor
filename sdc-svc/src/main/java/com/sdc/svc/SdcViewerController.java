@@ -1,5 +1,6 @@
 package com.sdc.svc;
 
+import com.sdc.svc.dto.SegyDtos.FilesResponse;
 import com.sdc.svc.dto.SegyDtos.TraceSliceRequest;
 import com.sdc.svc.dto.SegyDtos.TraceSliceResponse;
 import com.sdc.svc.dto.SegyDtos.TraceHeadersRequest;
@@ -23,6 +24,18 @@ public class SdcViewerController {
 
     public SdcViewerController(SdcViewerService service) {
         this.service = service;
+    }
+
+    @GetMapping("/files")
+    @Operation(summary = "List available SDC files", description = "Returns basenames of .sdc files under sdc.data.root. Empty list when root is blank.")
+    public FilesResponse listSdcFiles() {
+        return new FilesResponse(service.listFiles("sdc"));
+    }
+
+    @GetMapping("/sgy-files")
+    @Operation(summary = "List available SEG-Y files", description = "Returns basenames of .sgy files under sdc.data.root. Empty list when root is blank.")
+    public FilesResponse listSgyFiles() {
+        return new FilesResponse(service.listFiles("sgy"));
     }
 
     @PostMapping("/info")

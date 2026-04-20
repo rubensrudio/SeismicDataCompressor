@@ -4,6 +4,13 @@ public final class SegyDtos {
 
     private SegyDtos() {}
 
+    /**
+     * Response for /api/viewer/files and /api/viewer/sgy-files.
+     * Record chosen over public-field class: immutable, auto-generates equals/hashCode/toString,
+     * and Jackson serialises it without extra annotations.
+     */
+    public record FilesResponse(java.util.List<String> files) {}
+
     public static final class CompressRequest {
         public String segyPath;
         public String sdcPath;

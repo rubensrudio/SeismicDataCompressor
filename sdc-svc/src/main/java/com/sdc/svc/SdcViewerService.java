@@ -24,17 +24,46 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Service
 public class SdcViewerService {
 
     private final int cacheBlockCapacity;
     private final ConcurrentHashMap<String, VolumeBlockCache> cachesByPath;
+    private final String dataRoot;
 
-    public SdcViewerService(@Value("${sdc.viewer.cache-blocks:64}") int cacheBlockCapacity) {
+    public SdcViewerService(
+            @Value("${sdc.viewer.cache-blocks:64}") int cacheBlockCapacity,
+            @Value("${sdc.data.root:}") String dataRoot) {
         this.cacheBlockCapacity = Math.max(1, cacheBlockCapacity);
         this.cachesByPath = new ConcurrentHashMap<>();
+        this.dataRoot = dataRoot;
+    }
+
+    /** Returns basenames of files with the given extension under dataRoot. Empty list if root is blank. */
+    public List<String> listFiles(String ext) {
+        if (dataRoot == null || dataRoot.isBlank()) {
+            return Collections.emptyList();
+        }
+        Path root = Path.of(dataRoot);
+        if (!Files.isDirectory(root)) {
+            return Collections.emptyList();
+        }
+        String suffix = "." + ext.toLowerCase();
+        try (var stream = Files.list(root)) {
+            return stream
+                    .filter(p -> !Files.isDirectory(p))
+                    .map(p -> p.getFileName().toString())
+                    .filter(name -> name.toLowerCase().endsWith(suffix))
+                    .sorted()
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            return Collections.emptyList();
+        }
     }
 
     public ViewerInfoResponse info(ViewerInfoRequest req) throws IOException {
