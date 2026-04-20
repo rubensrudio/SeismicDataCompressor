@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { SdcViewerService, VolumeSliceResponse } from '../../services/sdc-viewer.service';
 
 @Component({
@@ -7,6 +7,7 @@ import { SdcViewerService, VolumeSliceResponse } from '../../services/sdc-viewer
   styleUrls: ['./volume-view.component.scss']
 })
 export class VolumeViewComponent implements OnInit {
+  @ViewChild('heatmapCanvas') heatmapCanvas!: ElementRef<HTMLCanvasElement>;
   @Input() sdcPath!: string;
 
   axis = 'TIME';
@@ -48,7 +49,7 @@ export class VolumeViewComponent implements OnInit {
   private renderCanvas() {
     if (!this.sliceData) return;
 
-    const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+    const canvas = this.heatmapCanvas?.nativeElement;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d')!;
