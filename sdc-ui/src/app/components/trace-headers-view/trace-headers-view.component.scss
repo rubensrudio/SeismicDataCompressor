@@ -1,94 +1,116 @@
 .trace-headers-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+
   h2 {
-    margin-top: 0;
-    color: #333;
+    margin: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
   }
 
   .controls {
-    margin-bottom: 1rem;
-    padding: 0.5rem;
-    background: #f5f5f5;
-    border-radius: 4px;
+    display: flex;
+    gap: var(--sp-4);
+    padding: var(--sp-2) var(--sp-4);
+    background: var(--surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-md);
 
     p {
-      margin: 0.25rem 0;
-      color: #666;
-      font-size: 0.9rem;
+      margin: 0;
+      color: var(--ink-secondary);
+      font-size: 12px;
+      font-family: var(--mono);
+
+      strong {
+        color: var(--ink-primary);
+        font-weight: 600;
+      }
     }
   }
 
   .loading {
-    padding: 2rem;
+    padding: var(--sp-8);
     text-align: center;
-    color: #999;
+    color: var(--ink-muted);
+    font-size: 12px;
   }
 
   .error {
-    background: #ffebee;
-    color: #c62828;
-    padding: 1rem;
-    border-radius: 4px;
-    margin-bottom: 1rem;
+    background: rgba(255, 82, 82, 0.06);
+    color: var(--error);
+    border: 1px solid rgba(255, 82, 82, 0.2);
+    padding: var(--sp-3) var(--sp-4);
+    border-radius: var(--r-md);
+    font-size: 12px;
   }
 
   .empty-message {
-    padding: 2rem;
+    padding: var(--sp-8);
     text-align: center;
-    color: #999;
-    font-style: italic;
+    color: var(--ink-muted);
+    font-size: 12px;
   }
 
   .table-container {
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    background: var(--surface-1);
+    border: 1px solid var(--border-standard);
+    border-radius: var(--r-md);
     overflow: auto;
     max-height: 600px;
-    margin-bottom: 1rem;
   }
 
   .headers-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.9rem;
+    font-size: 12px;
 
     thead {
-      background: #667eea;
-      color: white;
       position: sticky;
       top: 0;
       z-index: 10;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border-standard);
 
       th {
-        padding: 0.75rem;
+        padding: var(--sp-2) var(--sp-4);
         text-align: left;
+        font-size: 10px;
         font-weight: 600;
-        border-bottom: 2px solid #5568d3;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-muted);
+        white-space: nowrap;
       }
     }
 
     tbody {
       tr {
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--border-subtle);
+        transition: background 0.1s;
 
-        &:hover {
-          background: #f9f9f9;
-        }
+        &:last-child { border-bottom: none; }
+        &:hover { background: var(--surface-2); }
 
         td {
-          padding: 0.5rem 0.75rem;
-          text-align: right;
-          font-family: monospace;
+          padding: var(--sp-2) var(--sp-4);
+          font-family: var(--mono);
+          font-size: 12px;
+          color: #E8EDF2;
+          white-space: nowrap;
 
           &:first-child {
-            text-align: left;
-            font-weight: 500;
-            color: #667eea;
+            color: var(--amber);
+            font-weight: 600;
           }
 
           &:nth-child(2),
           &:nth-child(3) {
-            text-align: left;
+            color: #C8D4E0;
           }
         }
       }
@@ -96,21 +118,27 @@
   }
 
   .load-more-btn {
-    padding: 0.75rem 1.5rem;
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-4);
+    background: var(--surface-2);
+    border: 1px solid var(--border-standard);
+    border-radius: var(--r-md);
+    color: var(--ink-secondary);
+    font-size: 12px;
     font-weight: 500;
-    transition: background 0.3s ease;
+    cursor: pointer;
+    transition: border-color 0.12s, color 0.12s;
 
     &:hover {
-      background: #5568d3;
+      border-color: var(--border-emphasis);
+      color: var(--ink-primary);
     }
 
     &:disabled {
-      background: #ccc;
+      opacity: 0.35;
       cursor: not-allowed;
     }
   }
