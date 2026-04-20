@@ -1,0 +1,10 @@
+<div *ngIf="error" class="error-panel" [ngClass]="'error-panel--' + error.kind">
+  <mat-icon>{{ iconName }}</mat-icon>
+  <div class="error-panel__body">
+    <span class="error-panel__message">{{ errorMessage }}</span>
+    <button class="error-panel__retry" (click)="retry.emit()">
+      <mat-icon>refresh</mat-icon>
+      Retry
+    </button>
+  </div>
+</div>

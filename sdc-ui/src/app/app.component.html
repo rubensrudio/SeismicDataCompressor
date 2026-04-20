@@ -1,69 +1,70 @@
 <div class="app-container">
+
+  <!-- Header -->
   <header class="app-header">
-    <h1>{{ title }}</h1>
-    <p class="subtitle">AI-Enhanced Seismic Data Compressor - Viewer</p>
+    <div class="app-header__logo-mark">S</div>
+    <span class="app-header__name">sdc-viewer</span>
+    <div class="app-header__sep"></div>
+    <span class="app-header__subtitle">AI-Enhanced Seismic Data Compressor</span>
   </header>
 
+  <!-- Top-level nav: Viewer / Compress -->
+  <nav class="top-nav">
+    <button [class.active]="activeTab !== 'compress'" (click)="setTab('metadata')">
+      <mat-icon>grid_view</mat-icon>
+      Viewer
+    </button>
+    <button [class.active]="activeTab === 'compress'" (click)="setTab('compress')">
+      <mat-icon>compress</mat-icon>
+      Compress
+    </button>
+  </nav>
+
   <main class="app-main">
-    <section class="file-select-section">
-      <app-file-upload (fileSelected)="onFileSelected($event)"></app-file-upload>
-    </section>
 
-    <ng-container *ngIf="loading">
-      <div class="loading">Loading...</div>
-    </ng-container>
-
-    <ng-container *ngIf="error">
-      <div class="error">{{ error }}</div>
-    </ng-container>
-
-    <ng-container *ngIf="fileInfo && !loading">
-      <nav class="tabs">
-        <button 
-          *ngIf="isSdc2D"
-          [class.active]="activeTab === 'trace'"
-          (click)="activeTab = 'trace'">
-          Traces (2D)
-        </button>
-        <button 
-          *ngIf="isSdc3D"
-          [class.active]="activeTab === 'volume'"
-          (click)="activeTab = 'volume'">
-          Volume (3D)
-        </button>
-        <button 
-          [class.active]="activeTab === 'metadata'"
-          (click)="activeTab = 'metadata'">
-          Metadata
-        </button>
-        <button 
-          [class.active]="activeTab === 'headers'"
-          (click)="activeTab = 'headers'">
-          Trace Headers View
-        </button>
-      </nav>
-
-      <div class="content">
-        <app-metadata-view 
-          *ngIf="activeTab === 'metadata'"
-          [fileInfo]="fileInfo">
-        </app-metadata-view>
-
-        <app-trace-view 
-          *ngIf="activeTab === 'trace' && isSdc2D"
-          [sdcPath]="selectedFile!">
-        </app-trace-view>
-
-        <app-volume-view 
-          *ngIf="activeTab === 'volume' && isSdc3D"
-          [sdcPath]="selectedFile!">
-        </app-volume-view>
-
-        <app-trace-headers-view 
-          *ngIf="activeTab === 'headers'"
-          [sdcPath]="selectedFile!">
-        </app-trace-headers-view>
+    <!-- ── Compress mode ────────────────────────────────────────────────── -->
+    <ng-container *ngIf="activeTab === 'compress'">
+      <div class="compress-wrapper">
+        <app-compress-tab (viewResult)="onViewResult($event)"></app-compress-tab>
       </div>
+    </ng-container>
+
+    <!-- ── Viewer mode ──────────────────────────────────────────────────── -->
+    <ng-container *ngIf="activeTab !== 'compress'">
+
+      <!-- File bar -->
+      <div class="file-bar">
+        <span class="file-bar__label">File</span>
+        <div class="file-bar__selector">
+          <app-file-selector extension="sdc" (fileSelected)="onFileSelected($event)"></app-file-selector>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div *ngIf="loading" class="status-row status-row--loading">
+        <mat-icon>sync</mat-icon> Loading…
+      </div>
+      <div *ngIf="error && !loading" class="status-row status-row--error">
+        <mat-icon>error_outline</mat-icon> {{ error }}
+      </div>
+
+      <!-- Sub-nav + content -->
+      <ng-container *ngIf="fileInfo && !loading">
+        <nav class="sub-nav">
+          <button [class.active]="activeTab === 'metadata'" (click)="setTab('metadata')">Metadata</button>
+          <button *ngIf="isSdc2D" [class.active]="activeTab === 'trace'" (click)="setTab('trace')">Trace View</button>
+          <button *ngIf="isSdc3D" [class.active]="activeTab === 'volume'" (click)="setTab('volume')">Volume</button>
+          <button [class.active]="activeTab === 'headers'" (click)="setTab('headers')">Headers</button>
+        </nav>
+
+        <div class="content-area">
+          <app-metadata-view *ngIf="activeTab === 'metadata'" [fileInfo]="fileInfo"></app-metadata-view>
+          <app-trace-view *ngIf="activeTab === 'trace' && isSdc2D" [sdcPath]="selectedFile!"></app-trace-view>
+          <app-volume-view *ngIf="activeTab === 'volume' && isSdc3D" [sdcPath]="selectedFile!"></app-volume-view>
+          <app-trace-headers-view *ngIf="activeTab === 'headers'" [sdcPath]="selectedFile!"></app-trace-headers-view>
+        </div>
+      </ng-container>
+
     </ng-container>
   </main>
 </div>

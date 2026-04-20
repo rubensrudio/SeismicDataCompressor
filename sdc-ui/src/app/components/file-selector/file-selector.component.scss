@@ -1,0 +1,98 @@
+:host { display: block; width: 100%; }
+
+mat-form-field { width: 100%; }
+
+// ─── Fallback state ───────────────────────────────────────────────────────────
+.fallback {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+
+  &__notice {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-2);
+    padding: var(--sp-3) var(--sp-4);
+    background: rgba(245, 166, 35, 0.06);
+    border: 1px solid var(--amber-border);
+    border-radius: var(--r-md);
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--ink-secondary);
+
+    &__retry-link {
+      background: none;
+      border: none;
+      padding: 0;
+      color: var(--amber);
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: inherit;
+      font-family: inherit;
+    }
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: var(--amber);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+  }
+
+  &__input-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+
+  &__field { flex: 1; }
+
+  &__browse-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 var(--sp-3);
+    height: 40px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-standard);
+    border-radius: var(--r-md);
+    color: var(--ink-secondary);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color 0.12s, color 0.12s;
+
+    mat-icon { font-size: 16px; width: 16px; height: 16px; }
+
+    &:hover {
+      border-color: var(--border-emphasis);
+      color: var(--ink-primary);
+    }
+  }
+
+  &__load-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 var(--sp-4);
+    height: 40px;
+    background: var(--amber);
+    border: none;
+    border-radius: var(--r-md);
+    color: #080C12;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.12s;
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    &:not(:disabled):hover { opacity: 0.88; }
+  }
+}

@@ -8,16 +8,44 @@ import com.sdc.svc.dto.SegyDtos.DecompressRequest;
 import com.sdc.svc.dto.SegyDtos.DecompressResponse;
 import com.sdc.svc.dto.SegyDtos.Compress3DRequest;
 import com.sdc.svc.dto.SegyDtos.Decompress3DRequest;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.file.Path;
 
 @Service
 public class SegyCompressionService {
 
+    private final String dataRoot;
+
+    public SegyCompressionService(@Value("${sdc.data.root:}") String dataRoot) {
+        this.dataRoot = dataRoot;
+    }
+
+    /** Validates basename (no path separators) and resolves to full path under dataRoot. */
+    private Path resolveInDataRoot(String basename) {
+        if (basename == null || basename.contains("/") || basename.contains("\\")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "basename only");
+        }
+        if (dataRoot == null || dataRoot.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "sdc.data.root not configured");
+        }
+        return Path.of(dataRoot).resolve(basename);
+    }
+
+    /** Derives output .sdc path from input .sgy basename: strips .sgy, appends .sdc. */
+    private Path deriveOutputPath(String sgyBasename) {
+        String base = sgyBasename.toLowerCase().endsWith(".sgy")
+                ? sgyBasename.substring(0, sgyBasename.length() - 4)
+                : sgyBasename;
+        return Path.of(dataRoot).resolve(base + ".sdc");
+    }
+
     public CompressResponse compress(CompressRequest req) throws Exception {
-        Path segy = Path.of(req.segyPath);
-        Path sdc  = Path.of(req.sdcPath);
+        Path segy = resolveInDataRoot(req.sgyFile);
+        Path sdc  = deriveOutputPath(req.sgyFile);
 
         // Determina o profile:
         CompressionProfile profile;
@@ -62,8 +90,8 @@ public class SegyCompressionService {
     }
 
     public CompressResponse compress3D(Compress3DRequest req) throws Exception {
-        Path segy = Path.of(req.segyPath);
-        Path sdc  = Path.of(req.sdcPath);
+        Path segy = resolveInDataRoot(req.sgyFile);
+        Path sdc  = deriveOutputPath(req.sgyFile);
 
         // Determina o profile
         CompressionProfile profile;

@@ -19,6 +19,9 @@ export interface ViewerInfoResponse {
   blockXline?: number;
   blockTime?: number;
   blockCount?: number;
+  compressionRatio?: number;
+  avgPsnr?: number;
+  effectiveBits?: number;
 }
 
 export interface TraceSliceRequest {
@@ -69,6 +72,20 @@ export interface VolumeSliceResponse {
   count1: number;
   min: number;
   max: number;
+}
+
+export interface CompressResponse {
+  segyPath?: string;
+  sdcPath?: string;
+  segyBytes: number;
+  sdcBytes: number;
+  traceCount: number;
+  samplesPerTrace: number;
+  ratio: number;
+  ratioFile: number;
+  savingsPercent: number;
+  psnrMean: number;
+  effectiveBits: number;
 }
 
 export interface CacheInfo {
@@ -128,5 +145,18 @@ export class SdcViewerService {
 
   getTraceHeaders(request: TraceHeadersRequest): Observable<TraceHeadersResponse> {
     return this.http.post<TraceHeadersResponse>(`${this.apiUrl}/trace-headers`, request);
+  }
+
+  getAvailableFiles(ext: 'sdc' | 'sgy'): Observable<{ files: string[] }> {
+    const path = ext === 'sgy' ? '/api/viewer/sgy-files' : '/api/viewer/files';
+    return this.http.get<{ files: string[] }>(path);
+  }
+
+  compress(req: { sgyFile: string; profile: string; fidelityPercent?: number }): Observable<CompressResponse> {
+    return this.http.post<CompressResponse>('/api/segy/compress', req);
+  }
+
+  compress3d(req: { sgyFile: string; profile: string; fidelityPercent?: number }): Observable<CompressResponse> {
+    return this.http.post<CompressResponse>('/api/segy/compress3d', req);
   }
 }

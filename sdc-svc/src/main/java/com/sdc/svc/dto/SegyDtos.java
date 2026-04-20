@@ -4,16 +4,18 @@ public final class SegyDtos {
 
     private SegyDtos() {}
 
+    /**
+     * Response for /api/viewer/files and /api/viewer/sgy-files.
+     * Record chosen over public-field class: immutable, auto-generates equals/hashCode/toString,
+     * and Jackson serialises it without extra annotations.
+     */
+    public record FilesResponse(java.util.List<String> files) {}
+
     public static final class CompressRequest {
-        public String segyPath;
-        public String sdcPath;
+        /** Basename of the source SEG-Y file (no path separators). Server resolves against dataRoot. */
+        public String sgyFile;
 
-        // NOVO: perfil de compressão
-        // Ex.: "HIGH_QUALITY", "BALANCED", "HIGH_COMPRESSION"
         public String profile;
-
-        // NOVO: percentual de fidelidade desejado (0..100).
-        // Se informado, tem prioridade sobre "profile".
         public Double fidelityPercent;
     }
 
@@ -60,15 +62,12 @@ public final class SegyDtos {
     }
 
     public static final class Compress3DRequest {
-        public String segyPath;
-        public String sdcPath;
+        /** Basename of the source SEG-Y file (no path separators). Server resolves against dataRoot. */
+        public String sgyFile;
 
-        // Perfil de compressão (igual ao 1D)
         public String profile;
         public Double fidelityPercent;
 
-        // Dimensões do bloco 3D (inline x xline x time)
-        // Se null/0, caímos em defaults (ex.: 8x8xT)
         public Integer blockInline;
         public Integer blockXline;
         public Integer blockTime;

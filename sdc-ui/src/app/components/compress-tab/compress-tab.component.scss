@@ -1,0 +1,112 @@
+.compress-tab {
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: var(--sp-3);
+}
+
+.options-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+.submit-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+.progress-bar-wrap {
+  height: 3px;
+  background: var(--surface-3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+// ─── Result card ──────────────────────────────────────────────────────────────
+.result-card {
+  border: 1px solid var(--border-standard);
+  border-radius: var(--r-lg);
+  background: var(--surface-1);
+  overflow: hidden;
+
+  &__header {
+    padding: var(--sp-3) var(--sp-5);
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--success);
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+
+    mat-icon { font-size: 14px; width: 14px; height: 14px; }
+  }
+
+  &__metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border-subtle);
+  }
+
+  &__metric {
+    padding: var(--sp-4);
+    background: var(--surface-1);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+    }
+
+    span {
+      font-family: var(--mono);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--cyan);
+      letter-spacing: -0.02em;
+    }
+  }
+
+  &__actions {
+    padding: var(--sp-3) var(--sp-5);
+    border-top: 1px solid var(--border-subtle);
+  }
+}
+
+.view-result-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--amber-dim);
+  border: 1px solid var(--amber-border);
+  border-radius: var(--r-md);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--amber);
+  cursor: pointer;
+  transition: background 0.12s;
+
+  mat-icon { font-size: 14px; width: 14px; height: 14px; }
+  &:hover { background: rgba(245, 166, 35, 0.2); }
+}
