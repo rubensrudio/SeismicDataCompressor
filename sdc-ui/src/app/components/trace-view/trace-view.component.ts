@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { SdcViewerService, TraceSliceResponse } from '../../services/sdc-viewer.service';
 
 @Component({
@@ -7,6 +7,7 @@ import { SdcViewerService, TraceSliceResponse } from '../../services/sdc-viewer.
   styleUrls: ['./trace-view.component.scss']
 })
 export class TraceViewComponent implements OnInit {
+  @ViewChild('heatmapCanvas') heatmapCanvas!: ElementRef<HTMLCanvasElement>;
   @Input() sdcPath!: string;
 
   traceStart = 0;
@@ -50,7 +51,7 @@ export class TraceViewComponent implements OnInit {
   private renderCanvas() {
     if (!this.sliceData) return;
 
-    const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+    const canvas = this.heatmapCanvas?.nativeElement;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d')!;
