@@ -65,6 +65,31 @@
     </ng-container>
   </div>
 
+  <mat-card class="metrics-card">
+    <mat-card-header>
+      <mat-card-title>Compression Metrics</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="metrics-grid">
+        <div class="metric-item">
+          <label>Compression Ratio:</label>
+          <span>{{ info.compressionRatio != null ? (info.compressionRatio | number:'1.2-2') + '×' : '—' }}</span>
+        </div>
+        <div class="metric-item">
+          <label>Avg PSNR:</label>
+          <span>{{ info.avgPsnr != null ? (info.avgPsnr | number:'1.1-1') + ' dB' : '—' }}</span>
+        </div>
+        <div class="metric-item">
+          <label>Effective Bits:</label>
+          <span>{{ info.effectiveBits != null ? info.effectiveBits : '—' }}</span>
+        </div>
+      </div>
+      <mat-chip-set *ngIf="info.avgPsnr != null && info.avgPsnr < 30">
+        <mat-chip color="warn" highlighted>Low fidelity — consider a higher quality profile</mat-chip>
+      </mat-chip-set>
+    </mat-card-content>
+  </mat-card>
+
   <div class="type-badge">
     <span *ngIf="info.version === 2">2D Compression (trace-wise)</span>
     <span *ngIf="info.version === 3">3D Compression (volumetric)</span>
