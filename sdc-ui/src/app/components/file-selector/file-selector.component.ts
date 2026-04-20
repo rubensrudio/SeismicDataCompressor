@@ -25,6 +25,10 @@ export class FileSelectorComponent implements OnInit {
   constructor(private viewerService: SdcViewerService) {}
 
   ngOnInit(): void {
+    this.fetchFiles();
+  }
+
+  fetchFiles(): void {
     this.viewerService.getAvailableFiles(this.extension).subscribe({
       next: (response) => {
         const files = response.files ?? [];

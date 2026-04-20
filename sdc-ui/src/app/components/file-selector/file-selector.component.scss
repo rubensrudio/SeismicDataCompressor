@@ -20,6 +20,17 @@ mat-form-field { width: 100%; }
     line-height: 1.5;
     color: var(--ink-secondary);
 
+    &__retry-link {
+      background: none;
+      border: none;
+      padding: 0;
+      color: var(--amber);
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: inherit;
+      font-family: inherit;
+    }
+
     mat-icon {
       font-size: 16px;
       width: 16px;

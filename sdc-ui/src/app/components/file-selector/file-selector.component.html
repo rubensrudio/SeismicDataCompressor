@@ -20,7 +20,9 @@
       <mat-icon>folder_off</mat-icon>
       <span>
         No files found in <code>sdc.data.root</code>.
-        Browse for a file below or enter its path manually.
+        Browse for a file below, enter its path manually, or
+        <button class="fallback__retry-link" (click)="fetchFiles()">retry</button>
+        after configuring the data directory.
       </span>
     </div>
     <div class="fallback__input-row">
