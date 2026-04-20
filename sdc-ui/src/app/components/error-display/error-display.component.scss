@@ -1,0 +1,38 @@
+:host {
+  display: block;
+}
+
+.error-card--amber {
+  background-color: #fff8e1;
+  border-left: 4px solid #ffc107;
+
+  mat-icon {
+    color: #f9a825;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  span {
+    vertical-align: middle;
+  }
+}
+
+.error-card--red {
+  background-color: #ffebee;
+  border-left: 4px solid #f44336;
+
+  mat-icon {
+    color: #c62828;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  span {
+    vertical-align: middle;
+  }
+}
+
+mat-card-content {
+  display: flex;
+  align-items: center;
+}
