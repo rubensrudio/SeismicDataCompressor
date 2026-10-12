@@ -1,0 +1,45 @@
+# Hardware e software do run 2026-10-12_linux-x86_64-4cpu
+date_utc: 2026-10-12T18:47:45Z
+git_commit: 995255568d407e0ae63eb8b7780387befa0d3ede
+git_dirty: no
+kernel: Linux 6.18.44-fc-v114 x86_64 GNU/Linux
+distro: Ubuntu 24.04.5 LTS
+virtualization: docker
+
+## CPU
+Architecture:                            x86_64
+CPU(s):                                  4
+Vendor ID:                               GenuineIntel
+Model name:                              Intel(R) Xeon(R) Processor @ 2.10GHz
+Thread(s) per core:                      1
+Core(s) per socket:                      4
+Socket(s):                               1
+Flags:                                   (omitted; avx2: yes, avx512f: yes)
+L1d cache:                               192 KiB (4 instances)
+L2 cache:                                8 MiB (4 instances)
+L3 cache:                                260 MiB (1 instance)
+nproc (visible to process): 4
+
+## Memória
+MemTotal:       16479424 kB
+MemAvailable:   15893444 kB
+SwapTotal:             0 kB
+
+## Armazenamento (tmp, onde os .sdc temporários são escritos)
+Filesystem     Type  Size  Used Avail Use% Mounted on
+/dev/vda       ext4  252G  9.1G   30G  24% /
+
+## Java
+openjdk version "21.0.12.1" 2026-08-18
+OpenJDK Runtime Environment (build 21.0.12.1+1-1-24.04.4-Ubuntu)
+OpenJDK 64-Bit Server VM (build 21.0.12.1+1-1-24.04.4-Ubuntu, mixed mode, sharing)
+
+## Maven
+Apache Maven 3.9.11 (3e54c93a704957b63ee3494413a2b544fd3d825b)
+Java version: 21.0.12.1, vendor: Ubuntu, runtime: /usr/lib/jvm/java-21-openjdk-amd64
+OS name: "linux", version: "6.18.44-fc-v114", arch: "amd64", family: "unix"
+
+## Parâmetros
+presets: small,medium
+segy: none
+warmup: 2  iterations: 5  block3d: 8,8,0  heap: 3g
