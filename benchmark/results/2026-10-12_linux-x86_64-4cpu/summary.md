@@ -1,8 +1,8 @@
 # SDC Benchmark — linux-x86_64-4cpu
 
-## Ambiente
+## Environment
 
-| Campo | Valor |
+| Field | Value |
 |---|---|
 | label | linux-x86_64-4cpu |
 | timestampUtc | 2026-10-12T18:51:20.313026967Z |
@@ -24,16 +24,16 @@
 
 ## Datasets
 
-| Dataset | Origem | Grade (IL×XL×amostras) | Traços | Tamanho SEG-Y | SHA-256 | Verificado |
+| Dataset | Source | Grid (IL×XL×samples) | Traces | SEG-Y size | SHA-256 | Verified |
 |---|---|---|---|---|---|---|
-| synthetic-small | synthetic seed=20261012 | 32 × 32 × 500 | 1024 | 2.19 MiB | `0e6036582f8db53226e33c9b4b2e87a72204f6c3b974415d304fe2e8dc7401e7` | sim |
-| synthetic-medium | synthetic seed=20261012 | 128 × 128 × 1000 | 16384 | 66.25 MiB | `0b6389d128a2a1a08ebd959fbb87ac583ed60beaf473fd3c3d122fa6fd139e26` | sim |
+| synthetic-small | synthetic seed=20261012 | 32 × 32 × 500 | 1024 | 2.19 MiB | `0e6036582f8db53226e33c9b4b2e87a72204f6c3b974415d304fe2e8dc7401e7` | yes |
+| synthetic-medium | synthetic seed=20261012 | 128 × 128 × 1000 | 16384 | 66.25 MiB | `0b6389d128a2a1a08ebd959fbb87ac583ed60beaf473fd3c3d122fa6fd139e26` | yes |
 
-## Resultados — synthetic-small
+## Results — synthetic-small
 
-Razão = bytes brutos dos traços (float32) / bytes do arquivo comprimido. Throughput sobre os bytes brutos, pela mediana.
+Ratio = raw trace bytes (float32) / compressed file bytes. Throughput over the raw bytes, using the median.
 
-| Codec | Profile | Bits | Razão | bits/amostra | Compressão (ms) | Descompressão (ms) | Comp. MiB/s | Desc. MiB/s | SNR (dB) | PSNR (dB) | NRMSE (%) | Erro abs. máx. |
+| Codec | Profile | Bits | Ratio | bits/sample | Compression (ms) | Decompression (ms) | Comp. MiB/s | Decomp. MiB/s | SNR (dB) | PSNR (dB) | NRMSE (%) | Max abs. error |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | sdc-2d | HIGH_QUALITY | 16 | 1.96:1 | 16.37 | 65.1 ± 7.6 | 13.6 ± 1.1 | 30.0 | 143.9 | 63.44 | 84.59 | 0.067 | 0.09211 |
 | sdc-2d | BALANCED | 12 | 2.34:1 | 13.65 | 65.2 ± 13.0 | 18.0 ± 1.7 | 30.0 | 108.3 | -2.04 | 19.10 | 126.525 | 149.3 |
@@ -45,11 +45,11 @@ Razão = bytes brutos dos traços (float32) / bytes do arquivo comprimido. Throu
 | deflate-9 | LOSSLESS | 32 | 1.06:1 | 30.07 | 70.3 ± 11.4 | 12.1 ± 0.7 | 27.8 | 160.8 | ∞ (lossless) | ∞ (lossless) | 0 | 0 |
 | shuffle+deflate-9 | LOSSLESS | 32 | 1.19:1 | 26.92 | 266.5 ± 26.5 | 3.6 ± 2.1 | 7.3 | 535.9 | ∞ (lossless) | ∞ (lossless) | 0 | 0 |
 
-## Resultados — synthetic-medium
+## Results — synthetic-medium
 
-Razão = bytes brutos dos traços (float32) / bytes do arquivo comprimido. Throughput sobre os bytes brutos, pela mediana.
+Ratio = raw trace bytes (float32) / compressed file bytes. Throughput over the raw bytes, using the median.
 
-| Codec | Profile | Bits | Razão | bits/amostra | Compressão (ms) | Descompressão (ms) | Comp. MiB/s | Desc. MiB/s | SNR (dB) | PSNR (dB) | NRMSE (%) | Erro abs. máx. |
+| Codec | Profile | Bits | Ratio | bits/sample | Compression (ms) | Decompression (ms) | Comp. MiB/s | Decomp. MiB/s | SNR (dB) | PSNR (dB) | NRMSE (%) | Max abs. error |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | sdc-2d | HIGH_QUALITY | 16 | 2.06:1 | 15.51 | 1374.3 ± 57.5 | 418.8 ± 11.9 | 45.5 | 149.2 | 58.98 | 81.64 | 0.112 | 0.1866 |
 | sdc-2d | BALANCED | 12 | 2.51:1 | 12.75 | 1667.9 ± 159.4 | 418.7 ± 13.3 | 37.5 | 149.3 | 0.33 | 23.00 | 96.242 | 183.1 |

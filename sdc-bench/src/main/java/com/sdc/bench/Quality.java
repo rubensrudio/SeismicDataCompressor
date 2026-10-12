@@ -3,14 +3,14 @@ package com.sdc.bench;
 import java.util.List;
 
 /**
- * Métricas de fidelidade calculadas sobre as amplitudes originais (não normalizadas).
+ * Fidelity metrics computed on the original (non-normalized) amplitudes.
  *
- *  - SNR  (dB) = 10·log10( Σx² / Σ(x−x̂)² )        — métrica usual em compressão sísmica
- *  - PSNR (dB) = 20·log10( (max−min) / RMSE )      — pico = faixa dinâmica do volume
+ *  - SNR  (dB) = 10·log10( Σx² / Σ(x−x̂)² )        — the usual metric in seismic compression
+ *  - PSNR (dB) = 20·log10( (max−min) / RMSE )      — peak = dynamic range of the volume
  *  - NRMSE (%) = RMSE / RMS(x) · 100
  *  - maxAbsError = max |x − x̂|
  *
- * Erro zero (lossless) resulta em SNR/PSNR = +∞ e NRMSE = 0.
+ * Zero error (lossless) gives SNR/PSNR = +∞ and NRMSE = 0.
  */
 public record Quality(double snrDb, double psnrDb, double nrmsePercent, double maxAbsError,
                       long samples, long nonFiniteSamples) {

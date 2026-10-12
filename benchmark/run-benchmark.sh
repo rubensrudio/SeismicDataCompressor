@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Benchmark reprodutível do SDC.
+# SDC reproducible benchmark.
 #
-#   ./benchmark/run-benchmark.sh                     # presets small + medium, 2 warmups, 5 iterações
+#   ./benchmark/run-benchmark.sh                     # presets small + medium, 2 warmups, 5 iterations
 #   PRESETS=small ITERATIONS=3 ./benchmark/run-benchmark.sh
-#   SEGY=/dados/F3.sgy PRESETS=none ./benchmark/run-benchmark.sh
+#   SEGY=/data/F3.sgy PRESETS=none ./benchmark/run-benchmark.sh
 #
-# Variáveis: PRESETS, SEGY, WARMUP, ITERATIONS, BLOCK, HEAP, LABEL, OUT, SKIP_BUILD
+# Variables: PRESETS, SEGY, WARMUP, ITERATIONS, BLOCK, HEAP, LABEL, OUT, SKIP_BUILD
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -22,7 +22,7 @@ OUT="${OUT:-$ROOT/benchmark/results/$RUN_ID}"
 DATA_DIR="$ROOT/benchmark/data"
 JAR="$ROOT/sdc-bench/target/sdc-bench-0.1.0-SNAPSHOT-jar-with-dependencies.jar"
 
-# A saída das ferramentas não deve carregar JAVA_TOOL_OPTIONS (pode conter proxies/segredos do ambiente).
+# Tool output must not carry JAVA_TOOL_OPTIONS (it may contain proxies/secrets from the environment).
 strip_tool_opts() { grep -v '^Picked up JAVA_TOOL_OPTIONS' || true; }
 
 if [[ "${SKIP_BUILD:-0}" != "1" ]]; then
@@ -35,7 +35,7 @@ mkdir -p "$OUT" "$DATA_DIR"
 # ---------------------------------------------------------------- hardware / software
 HW="$OUT/hardware.txt"
 {
-  echo "# Hardware e software do run $RUN_ID"
+  echo "# Hardware and software for run $RUN_ID"
   echo "date_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo "git_commit: $(git rev-parse HEAD 2>/dev/null || echo unknown)"
   echo "git_dirty: $([[ -n "$(git status --porcelain -- . ':!benchmark/results' ':!benchmark/data' 2>/dev/null)" ]] && echo yes || echo no)"
@@ -55,12 +55,12 @@ HW="$OUT/hardware.txt"
   fi
   echo "nproc (visible to process): $(nproc 2>/dev/null || echo unknown)"
   echo
-  echo "## Memória"
+  echo "## Memory"
   if [[ -r /proc/meminfo ]]; then grep -E '^(MemTotal|MemAvailable|SwapTotal)' /proc/meminfo; else sysctl -n hw.memsize 2>/dev/null || true; fi
   if [[ -r /sys/fs/cgroup/memory.max ]]; then echo "cgroup memory.max: $(cat /sys/fs/cgroup/memory.max)"; fi
   if [[ -r /sys/fs/cgroup/cpu.max ]]; then echo "cgroup cpu.max: $(cat /sys/fs/cgroup/cpu.max)"; fi
   echo
-  echo "## Armazenamento (tmp, onde os .sdc temporários são escritos)"
+  echo "## Storage (tmp, where temporary .sdc files are written)"
   df -hT "${TMPDIR:-/tmp}" 2>/dev/null | tail -n +1 || true
   echo
   echo "## Java"
@@ -69,7 +69,7 @@ HW="$OUT/hardware.txt"
   echo "## Maven"
   mvn -v 2>&1 | strip_tool_opts | grep -E '^(Apache Maven|Java version|OS name)' || true
   echo
-  echo "## Parâmetros"
+  echo "## Parameters"
   echo "presets: $PRESETS"
   echo "segy: ${SEGY:-none}"
   echo "warmup: $WARMUP  iterations: $ITERATIONS  block3d: $BLOCK  heap: $HEAP"
@@ -85,9 +85,9 @@ if [[ -n "${SEGY:-}" ]]; then
   for f in "${FILES[@]}"; do ARGS+=(--segy "$f"); done
 fi
 
-# Heap fixo (Xms = Xmx) evita redimensionamento do heap durante as medições.
+# A fixed heap (Xms = Xmx) avoids heap resizing during measurements.
 java -Xms"$HEAP" -Xmx"$HEAP" -XX:+AlwaysPreTouch -jar "$JAR" "${ARGS[@]}" 2>&1 | strip_tool_opts | tee "$OUT/run.log"
 
 echo
-echo "[run] pronto: $OUT"
+echo "[run] done: $OUT"
 ls -1 "$OUT"

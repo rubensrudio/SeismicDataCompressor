@@ -1,22 +1,22 @@
 # SDC Viewer UI - Angular
 
-Interface moderna em Angular para visualizar arquivos `.sdc` (v2 e v3) gerados pelo compressor SDC.
+Modern Angular interface for viewing `.sdc` files (v2 and v3) produced by the SDC compressor.
 
-## Recursos
+## Features
 
-- **Metadados**: Visualiza informações de header, dimensões, número de blocos.
-- **Traços 2D**: Renderiza heatmap de traços sísmicos (.sdc v2) com controles de range.
-- **Volume 3D**: Fatia volumétrica com navegação por INLINE/XLINE/TIME (.sdc v3).
-- **Cache LRU**: Navegação fluida com cache de blocos decomprimidos no backend.
-- **Responsivo**: Interface limpa e moderna com controles intuitivos.
+- **Metadata**: Shows header information, dimensions and block count.
+- **2D traces**: Renders a heatmap of seismic traces (.sdc v2) with range controls.
+- **3D volume**: Volume slices with INLINE/XLINE/TIME navigation (.sdc v3).
+- **LRU cache**: Smooth navigation backed by a cache of decompressed blocks on the backend.
+- **Responsive**: Clean, modern interface with intuitive controls.
 
-## Pré-requisitos
+## Prerequisites
 
 - Node.js 20+
 - npm 10+
 - Angular CLI 18+
 
-## Instalação
+## Installation
 
 ```bash
 cd sdc-ui
@@ -24,44 +24,44 @@ npm install
 npm start
 ```
 
-Acessa `http://localhost:4200`. A UI conecta automaticamente ao backend em `http://localhost:8080` (configurável em `proxy.conf.json`).
+Open `http://localhost:4200`. The UI connects to the backend at `http://localhost:8080` automatically (configurable in `proxy.conf.json`).
 
-## Estrutura de Pastas
+## Folder Structure
 
 ```
 src/
 ├── app/
 │   ├── components/
-│   │   ├── file-upload/        # Upload de arquivo .sdc
-│   │   ├── metadata-view/      # Exibe metadados
-│   │   ├── trace-view/         # Visualiza traços 2D (v2)
-│   │   └── volume-view/        # Visualiza volume 3D (v3)
+│   │   ├── file-upload/        # .sdc file upload
+│   │   ├── metadata-view/      # Shows metadata
+│   │   ├── trace-view/         # 2D trace viewer (v2)
+│   │   └── volume-view/        # 3D volume viewer (v3)
 │   ├── services/
-│   │   └── sdc-viewer.service.ts   # Cliente HTTP da API
-│   └── app.component.ts        # Componente raiz
+│   │   └── sdc-viewer.service.ts   # HTTP client for the API
+│   └── app.component.ts        # Root component
 ├── index.html
 ├── main.ts
 └── styles.scss
 ```
 
-## Uso
+## Usage
 
-1. **Abrir arquivo**: Insira o caminho do .sdc (ex: `d:/dados/volume.sdc`) e clique "Abrir".
-2. **Ver metadados**: Tab "Metadados" mostra info de header.
-3. **Traços 2D**: Tab "Traços" permite navegar e renderizar traços sísmicos (apenas .sdc v2).
-4. **Volume 3D**: Tab "Volume" permite fatiar e navegar volume 3D (apenas .sdc v3).
+1. **Open a file**: Enter the path to the .sdc file (e.g. `d:/data/volume.sdc`) and click "Open".
+2. **View metadata**: The "Metadata" tab shows header information.
+3. **2D traces**: The "Trace View" tab lets you browse and render seismic traces (.sdc v2 only).
+4. **3D volume**: The "Volume" tab lets you slice and navigate a 3D volume (.sdc v3 only).
 
-## Endpoints Consumidos
+## Endpoints Used
 
-- `POST /api/viewer/info` - Metadados do arquivo
-- `POST /api/viewer/trace-slice` - Slice de traços 2D
-- `POST /api/viewer/volume-slice` - Slice de volume 3D
-- `GET /api/viewer/cache-info` - Info de cache
-- `DELETE /api/viewer/cache-clear` - Limpar cache
+- `POST /api/viewer/info` - File metadata
+- `POST /api/viewer/trace-slice` - 2D trace slice
+- `POST /api/viewer/volume-slice` - 3D volume slice
+- `GET /api/viewer/cache-info` - Cache info
+- `DELETE /api/viewer/cache-clear` - Clear cache
 
-## Configuração de CORS
+## CORS Configuration
 
-Se o backend está em origem diferente, configure CORS. Exemplo em Java:
+If the backend runs on a different origin, configure CORS. Java example:
 
 ```java
 @Configuration
@@ -81,16 +81,16 @@ public class CorsConfig {
 }
 ```
 
-## Build para Produção
+## Production Build
 
 ```bash
 npm run build
-# Saída em dist/sdc-ui/
+# Output in dist/sdc-ui/
 ```
 
-## Desenvolvimento
+## Development
 
 ```bash
 npm start
-# Servidor em http://localhost:4200 com hot reload
+# Dev server at http://localhost:4200 with hot reload
 ```
