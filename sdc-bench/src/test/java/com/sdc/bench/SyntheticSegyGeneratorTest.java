@@ -24,7 +24,7 @@ public class SyntheticSegyGeneratorTest {
 
         assertEquals(spec.fileBytes(), Files.size(a));
         assertEquals(BenchmarkRunner.sha256(a), BenchmarkRunner.sha256(b));
-        // hash canônico: garante que o dataset é o mesmo em qualquer JVM/CPU
+        // canonical hash: guarantees the dataset is the same on any JVM/CPU
         assertEquals(spec.expectedSha256(), BenchmarkRunner.sha256(a));
     }
 

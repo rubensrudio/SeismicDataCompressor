@@ -10,25 +10,25 @@ import java.util.Arrays;
 import java.util.Random;
 
 /**
- * Gera um volume SEG-Y 3D sintético e 100% determinístico.
+ * Generates a synthetic, fully deterministic 3D SEG-Y volume.
  *
- * Modelo geológico:
- *  - N refletores com mergulho em inline/xline e dobramento senoidal suave
- *  - uma falha normal planar (rejeito vertical constante)
- *  - wavelet Ricker de frequência fixa
- *  - atenuação exponencial com o tempo
- *  - ruído gaussiano aditivo
+ * Geological model:
+ *  - N reflectors dipping in inline/xline with a gentle sinusoidal fold
+ *  - one planar normal fault (constant vertical throw)
+ *  - fixed-frequency Ricker wavelet
+ *  - exponential attenuation with time
+ *  - additive Gaussian noise
  *
- * Reprodutibilidade:
- *  - java.util.Random tem algoritmo especificado (LCG de 48 bits)
- *  - nextGaussian usa StrictMath desde o Java 17
- *  - toda a matemática de ponto flutuante usa StrictMath (bit-a-bit idêntico em qualquer JVM/CPU)
- *  Logo, o mesmo Spec gera exatamente os mesmos bytes, verificável via SHA-256.
+ * Reproducibility:
+ *  - java.util.Random has a specified algorithm (48-bit LCG)
+ *  - nextGaussian uses StrictMath since Java 17
+ *  - all floating-point math uses StrictMath (bit-for-bit identical on any JVM/CPU)
+ *  So the same Spec always produces exactly the same bytes, verifiable via SHA-256.
  *
- * Layout SEG-Y (o que SegyIO lê):
- *  - 3200 bytes de header textual (ASCII)
- *  - 400 bytes de binary header (dt, ns, formato 5 = IEEE float32)
- *  - por traço: 240 bytes de header (inline em 189-192, xline em 193-196) + ns floats big-endian
+ * SEG-Y layout (what SegyIO reads):
+ *  - 3200-byte textual header (ASCII)
+ *  - 400-byte binary header (dt, ns, format 5 = IEEE float32)
+ *  - per trace: 240-byte header (inline at 189-192, xline at 193-196) + ns big-endian floats
  */
 public final class SyntheticSegyGenerator {
 
@@ -38,7 +38,7 @@ public final class SyntheticSegyGenerator {
     public static final int FIRST_XLINE = 2000;
 
     /**
-     * @param expectedSha256 hash esperado do arquivo gerado (null = não verificar)
+     * @param expectedSha256 expected hash of the generated file (null = do not verify)
      */
     public record Spec(String name,
                        int inlines,
@@ -72,7 +72,7 @@ public final class SyntheticSegyGenerator {
             case "tiny" -> TINY;
             case "small" -> SMALL;
             case "medium" -> MEDIUM;
-            default -> throw new IllegalArgumentException("preset desconhecido: " + name + " (use tiny|small|medium)");
+            default -> throw new IllegalArgumentException("unknown preset: " + name + " (use tiny|small|medium)");
         };
     }
 
@@ -86,35 +86,35 @@ public final class SyntheticSegyGenerator {
         int ns = spec.samples();
         double dtSec = spec.sampleIntervalUs() / 1_000_000.0;
 
-        // ---- refletores ----
+        // ---- reflectors ----
         int reflectorCount = Math.max(8, ns / 25);
         Reflector[] reflectors = new Reflector[reflectorCount];
         double spacing = (double) ns / reflectorCount;
         for (int r = 0; r < reflectorCount; r++) {
             double t0 = (r + 0.5) * spacing + (structure.nextDouble() - 0.5) * spacing * 0.6;
             double rc = (structure.nextDouble() * 2.0 - 1.0) * 0.3;
-            double dipI = (structure.nextDouble() * 2.0 - 1.0) * 0.15;   // amostras por inline
-            double dipJ = (structure.nextDouble() * 2.0 - 1.0) * 0.10;   // amostras por xline
-            double foldAmp = structure.nextDouble() * 4.0;               // amostras
+            double dipI = (structure.nextDouble() * 2.0 - 1.0) * 0.15;   // samples per inline
+            double dipJ = (structure.nextDouble() * 2.0 - 1.0) * 0.10;   // samples per xline
+            double foldAmp = structure.nextDouble() * 4.0;               // samples
             double foldLenI = 20.0 + structure.nextDouble() * 60.0;
             double foldLenJ = 20.0 + structure.nextDouble() * 60.0;
             double foldPhase = structure.nextDouble() * 2.0 * StrictMath.PI;
             reflectors[r] = new Reflector(t0, rc, dipI, dipJ, foldAmp, foldLenI, foldLenJ, foldPhase);
         }
 
-        // ---- wavelet Ricker (25 Hz), meia-largura de suporte em amostras ----
+        // ---- Ricker wavelet (25 Hz), support half-width in samples ----
         double f = 25.0;
         double pf2 = StrictMath.PI * StrictMath.PI * f * f;
         int half = (int) StrictMath.ceil(0.08 / dtSec); // ±80 ms
 
-        // ---- falha normal: plano i = a + b*j, bloco i > plano rebaixado ----
+        // ---- normal fault: plane i = a + b*j, block with i > plane is downthrown ----
         double faultA = spec.inlines() * 0.55;
         double faultB = 0.10;
-        double faultThrow = 6.5; // amostras
+        double faultThrow = 6.5; // samples
 
         double amplitudeScale = 1000.0;
         double noiseSigma = spec.noiseLevel() * amplitudeScale * 0.3;
-        double attenuationTau = ns * 0.6; // amostras
+        double attenuationTau = ns * 0.6; // samples
 
         Files.createDirectories(out.toAbsolutePath().getParent());
         try (DataOutputStream os = new DataOutputStream(
@@ -183,27 +183,27 @@ public final class SyntheticSegyGenerator {
 
     private static byte[] binaryHeader(Spec spec) {
         byte[] b = new byte[400];
-        putShort(b, 12, spec.xlines());          // traces por ensemble
-        putShort(b, 16, spec.sampleIntervalUs()); // intervalo de amostragem (us)
-        putShort(b, 20, spec.samples());          // amostras por traço
-        putShort(b, 24, 5);                       // formato 5 = IEEE float32
+        putShort(b, 12, spec.xlines());          // traces per ensemble
+        putShort(b, 16, spec.sampleIntervalUs()); // sample interval (us)
+        putShort(b, 20, spec.samples());          // samples per trace
+        putShort(b, 24, 5);                       // format 5 = IEEE float32
         putShort(b, 26, 1);                       // ensemble fold
         putShort(b, 28, 4);                       // sorting: horizontally stacked
-        putShort(b, 54, 1);                       // unidades: metros
+        putShort(b, 54, 1);                       // units: meters
         putShort(b, 300, 0x0100);                 // SEG-Y rev 1
-        putShort(b, 302, 1);                      // traços de comprimento fixo
+        putShort(b, 302, 1);                      // fixed-length traces
         return b;
     }
 
     private static void fillTraceHeader(byte[] th, int seq, int inline, int xline, Spec spec) {
         Arrays.fill(th, (byte) 0);
-        putInt(th, 0, seq);                       // seq na linha
-        putInt(th, 4, seq);                       // seq no reel
+        putInt(th, 0, seq);                       // sequence within line
+        putInt(th, 4, seq);                       // sequence within reel
         putInt(th, 8, inline);                    // field record
-        putInt(th, 12, xline);                    // trace no field record
+        putInt(th, 12, xline);                    // trace within field record
         putInt(th, 20, seq);                      // CDP
-        putShort(th, 28, 1);                      // trace id code: sísmico
-        putShort(th, 70, 1);                      // scalar de coordenadas
+        putShort(th, 28, 1);                      // trace id code: seismic
+        putShort(th, 70, 1);                      // coordinate scalar
         putInt(th, 72, xline * 25);               // source X
         putInt(th, 76, inline * 25);              // source Y
         putShort(th, 114, spec.samples());        // ns

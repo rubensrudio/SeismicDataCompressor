@@ -26,7 +26,8 @@ sdc-ui/dist/
 *.csv
 *.txt
 .specs/
-.claude/# Benchmark: datasets são regenerados de forma determinística; resultados são versionados
+.claude/
+# Benchmark: datasets are regenerated deterministically; results are versioned
 benchmark/data/
 !benchmark/results/**/*.csv
 !benchmark/results/**/*.txt
