@@ -90,11 +90,23 @@ code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2)
 }
 
 .mat-mdc-select-value { color: var(--ink-primary) !important; }
-.mat-mdc-option { background: var(--surface-2); color: var(--ink-primary); }
-.mat-mdc-option:hover { background: var(--surface-3) !important; }
-.mat-mdc-option.mdc-list-item--selected { background: var(--amber-dim) !important; }
+.mat-mdc-option {
+  background: var(--surface-2);
+  color: #E8EDF2 !important;
+  --mdc-list-list-item-label-text-color: #E8EDF2;
+  --mdc-list-list-item-hover-label-text-color: #ffffff;
+  .mdc-list-item__primary-text { color: #E8EDF2 !important; }
+}
+.mat-mdc-option:hover {
+  background: var(--surface-3) !important;
+  .mdc-list-item__primary-text { color: #ffffff !important; }
+}
+.mat-mdc-option.mdc-list-item--selected {
+  background: var(--amber-dim) !important;
+  .mdc-list-item__primary-text { color: #F5A623 !important; }
+}
 .mat-mdc-select-panel { background: var(--surface-2) !important; border: 1px solid var(--border-standard); border-radius: var(--r-md) !important; }
-.mat-mdc-optgroup-label { color: var(--ink-muted) !important; font-size: 11px !important; letter-spacing: 0.08em; text-transform: uppercase; }
+.mat-mdc-optgroup-label { color: rgba(232, 237, 242, 0.45) !important; font-size: 10px !important; letter-spacing: 0.1em; text-transform: uppercase; }
 
 .mat-mdc-raised-button.mat-primary {
   --mdc-protected-button-container-color: var(--amber);
@@ -104,22 +116,29 @@ code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2)
   border-radius: var(--r-md) !important;
 }
 
+// Button-toggle background is on host via --mat-standard-button-toggle-background-color.
+// Inner .mat-button-toggle-button has background:none — must override via :root token.
+:root {
+  --mat-standard-button-toggle-background-color: #1E2A3A;
+  --mat-standard-button-toggle-text-color: rgba(232, 237, 242, 0.82);
+  --mat-standard-button-toggle-selected-state-background-color: rgba(245, 166, 35, 0.12);
+  --mat-standard-button-toggle-selected-state-text-color: #F5A623;
+  --mat-standard-button-toggle-divider-color: rgba(232, 237, 242, 0.09);
+}
+
 .mat-mdc-button-toggle-group {
-  border: 1px solid var(--border-standard) !important;
+  border: 1px solid rgba(232, 237, 242, 0.18) !important;
   border-radius: var(--r-md) !important;
   overflow: hidden;
-  background: var(--surface-1);
 }
-.mat-mdc-button-toggle {
-  background: transparent;
-  color: var(--ink-secondary);
-  border: none !important;
-  font-size: 12px;
-  font-weight: 500;
-  &.mat-mdc-button-toggle-checked {
-    background: var(--amber-dim) !important;
-    color: var(--amber) !important;
-  }
+
+.mat-button-toggle-appearance-standard:hover:not(.mat-button-toggle-checked) {
+  --mat-standard-button-toggle-background-color: #263347;
+  --mat-standard-button-toggle-text-color: #E8EDF2;
+}
+
+.mat-button-toggle-appearance-standard.mat-button-toggle-checked {
+  font-weight: 600;
 }
 
 .mat-mdc-card {

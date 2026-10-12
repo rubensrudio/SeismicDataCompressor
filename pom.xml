@@ -24,6 +24,7 @@
     <module>sdc-ai</module>
     <module>sdc-cli</module>
     <module>sdc-svc</module>
+    <module>sdc-bench</module>
   </modules>
 
   <dependencyManagement>

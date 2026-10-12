@@ -1,0 +1,23 @@
+[bench] SDC benchmark | warmup=2 iterations=5 block=[8, 8, 0] out=/home/user/SeismicDataCompressor/benchmark/results/2026-10-12_linux-x86_64-4cpu
+[bench] Gerando synthetic-medium (128 x 128 x 1000) -> /home/user/SeismicDataCompressor/benchmark/data/synthetic-medium.sgy
+[bench] Dataset synthetic-small  sha256=0e6036582f8db53226e33c9b4b2e87a72204f6c3b974415d304fe2e8dc7401e7  [verificado]
+[bench]   sdc-2d             HIGH_QUALITY     ratio=   1.96:1  comp=    65.1 ms  decomp=    13.6 ms  SNR=63.44 dB
+[bench]   sdc-2d             BALANCED         ratio=   2.34:1  comp=    65.2 ms  decomp=    18.0 ms  SNR=-2.04 dB
+[bench]   sdc-2d             HIGH_COMPRESSION ratio=   3.15:1  comp=    51.2 ms  decomp=    18.3 ms  SNR=-2.57 dB
+[bench]   sdc-3d             HIGH_QUALITY     ratio=   2.21:1  comp=    34.3 ms  decomp=    17.3 ms  SNR=62.91 dB
+[bench]   sdc-3d             BALANCED         ratio=   2.76:1  comp=    54.4 ms  decomp=    14.1 ms  SNR=38.58 dB
+[bench]   sdc-3d             HIGH_COMPRESSION ratio=   4.50:1  comp=    96.7 ms  decomp=    14.4 ms  SNR=14.06 dB
+[bench]   deflate-6          LOSSLESS         ratio=   1.06:1  comp=    81.7 ms  decomp=    12.0 ms  SNR=inf (lossless)
+[bench]   deflate-9          LOSSLESS         ratio=   1.06:1  comp=    70.3 ms  decomp=    12.1 ms  SNR=inf (lossless)
+[bench]   shuffle+deflate-9  LOSSLESS         ratio=   1.19:1  comp=   266.5 ms  decomp=     3.6 ms  SNR=inf (lossless)
+[bench] Dataset synthetic-medium  sha256=0b6389d128a2a1a08ebd959fbb87ac583ed60beaf473fd3c3d122fa6fd139e26  [verificado]
+[bench]   sdc-2d             HIGH_QUALITY     ratio=   2.06:1  comp=  1374.3 ms  decomp=   418.8 ms  SNR=58.98 dB
+[bench]   sdc-2d             BALANCED         ratio=   2.51:1  comp=  1667.9 ms  decomp=   418.7 ms  SNR=0.33 dB
+[bench]   sdc-2d             HIGH_COMPRESSION ratio=   3.49:1  comp=  1386.5 ms  decomp=   410.0 ms  SNR=-0.19 dB
+[bench]   sdc-3d             HIGH_QUALITY     ratio=   2.24:1  comp=  1351.1 ms  decomp=   405.5 ms  SNR=58.00 dB
+[bench]   sdc-3d             BALANCED         ratio=   2.81:1  comp=  1944.8 ms  decomp=   412.3 ms  SNR=33.63 dB
+[bench]   sdc-3d             HIGH_COMPRESSION ratio=   4.79:1  comp=  3558.5 ms  decomp=   373.9 ms  SNR=9.58 dB
+[bench]   deflate-6          LOSSLESS         ratio=   1.06:1  comp=  2203.2 ms  decomp=   399.7 ms  SNR=inf (lossless)
+[bench]   deflate-9          LOSSLESS         ratio=   1.06:1  comp=  2206.4 ms  decomp=   399.9 ms  SNR=inf (lossless)
+[bench]   shuffle+deflate-9  LOSSLESS         ratio=   1.19:1  comp=  8601.1 ms  decomp=   138.8 ms  SNR=inf (lossless)
+[bench] Resultados gravados em /home/user/SeismicDataCompressor/benchmark/results/2026-10-12_linux-x86_64-4cpu

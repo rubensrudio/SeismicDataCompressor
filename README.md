@@ -10,6 +10,7 @@ A comprehensive seismic data compression solution with AI enhancement, REST API,
 - **`sdc-cli`**: Command-line interface (Picocli) for compress/decompress/inspect operations
 - **`sdc-svc`**: Spring Boot WebFlux microservice with RESTful API
 - **`sdc-ui`**: Angular 18 web interface with Material Design components
+- **`sdc-bench`**: Reproducible benchmark (deterministic synthetic SEG-Y dataset + measurement harness)
 
 ## Prerequisites
 
@@ -152,12 +153,24 @@ sdc-parent/
 ├── sdc-ai/                # AI/ML integration
 ├── sdc-cli/               # Command-line tool
 ├── sdc-svc/               # Spring Boot REST service
+├── sdc-bench/             # Benchmark harness + synthetic dataset generator
+├── benchmark/             # Benchmark script, methodology and committed results
 └── sdc-ui/                # Angular web interface
     ├── src/app/
     │   ├── components/    # UI components
     │   └── services/      # HTTP services
     └── package.json
 ```
+
+## Benchmark
+
+A reproducible benchmark (script, deterministic dataset with SHA-256 checksums, hardware capture and committed results) lives in [`benchmark/`](benchmark/README.md):
+
+```bash
+./benchmark/run-benchmark.sh    # ~2 min; writes benchmark/results/<date>_<os>-<arch>-<N>cpu/
+```
+
+Reference run (Xeon 2.1 GHz, 4 vCPU, OpenJDK 21, 128×128×1000 synthetic volume): `sdc-3d HIGH_QUALITY` reaches 2.24:1 at 58 dB SNR versus 1.06:1 for lossless Deflate. See [`benchmark/README.md`](benchmark/README.md) for the full tables and known issues the benchmark surfaced.
 
 ## Development
 
