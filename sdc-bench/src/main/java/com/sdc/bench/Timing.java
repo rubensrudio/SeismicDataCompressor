@@ -3,7 +3,7 @@ package com.sdc.bench;
 import java.util.Arrays;
 
 /**
- * Estatísticas de tempo de N iterações medidas (warmups descartados).
+ * Timing statistics for N measured iterations (warmups discarded).
  */
 public record Timing(long[] nanos) {
 
@@ -13,8 +13,8 @@ public record Timing(long[] nanos) {
     }
 
     /**
-     * Executa {@code warmup} iterações descartadas e {@code iterations} medidas.
-     * Um System.gc() antes de cada iteração reduz a interferência de coletas pendentes.
+     * Runs {@code warmup} discarded iterations and {@code iterations} measured ones.
+     * A System.gc() before each iteration reduces interference from pending collections.
      */
     public static Timing measure(int warmup, int iterations, Task task) throws Exception {
         for (int w = 0; w < warmup; w++) {
@@ -58,7 +58,7 @@ public record Timing(long[] nanos) {
         return Math.sqrt(acc / (nanos.length - 1)) / 1e6;
     }
 
-    /** Throughput em MiB/s sobre {@code bytes} (dados brutos dos traços), usando a mediana. */
+    /** Throughput in MiB/s over {@code bytes} (raw trace data), using the median. */
     public double throughputMiBs(long bytes) {
         double sec = medianMs() / 1e3;
         return sec > 0 ? (bytes / (1024.0 * 1024.0)) / sec : Double.POSITIVE_INFINITY;

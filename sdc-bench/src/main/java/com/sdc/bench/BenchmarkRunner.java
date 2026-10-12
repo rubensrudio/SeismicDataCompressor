@@ -29,17 +29,17 @@ import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 /**
- * Benchmark reprodutível do SDC.
+ * SDC reproducible benchmark.
  *
- * Para cada dataset mede, com warmup + N iterações:
+ * For each dataset it measures, with warmup + N iterations:
  *  - codec 2D  (SdcFileWriter.writeCompressed / SdcFileReader.readAllCompressed) × 3 profiles
  *  - codec 3D  (Sdc3DFileWriter.write3D / Sdc3DFileReader.read3D)               × 3 profiles
- *  - baselines lossless: Deflate 6, Deflate 9 e byte-shuffle + Deflate 9 sobre float32 brutos
+ *  - lossless baselines: Deflate 6, Deflate 9 and byte-shuffle + Deflate 9 on raw float32
  *
- * O parse do SEG-Y é feito uma única vez e fica fora das medições; os tempos cobrem
- * a codificação/decodificação do container .sdc (incluindo a escrita/leitura do arquivo).
+ * The SEG-Y is parsed only once and stays outside the measurements; timings cover
+ * encoding/decoding of the .sdc container (including writing/reading the file).
  *
- * Saídas em --out: results.json, results.csv, summary.md.
+ * Outputs in --out: results.json, results.csv, summary.md.
  */
 public final class BenchmarkRunner {
 
@@ -95,7 +95,7 @@ public final class BenchmarkRunner {
                 SyntheticSegyGenerator.Spec spec = SyntheticSegyGenerator.preset(p);
                 Path file = dataDir.resolve(spec.name() + ".sgy");
                 if (!Files.exists(file) || Files.size(file) != spec.fileBytes()) {
-                    log("Gerando %s (%d x %d x %d) -> %s", spec.name(), spec.inlines(), spec.xlines(), spec.samples(), file);
+                    log("Generating %s (%d x %d x %d) -> %s", spec.name(), spec.inlines(), spec.xlines(), spec.samples(), file);
                     SyntheticSegyGenerator.write(spec, file);
                 }
                 inputs.add(new Object[]{spec.name(), file, "synthetic seed=" + spec.seed(), spec.expectedSha256()});
@@ -106,7 +106,7 @@ public final class BenchmarkRunner {
                 inputs.add(new Object[]{name, file, "external file", null});
             }
             if (inputs.isEmpty()) {
-                throw new IllegalArgumentException("nenhum dataset: use --presets e/ou --segy");
+                throw new IllegalArgumentException("no datasets: use --presets and/or --segy");
             }
 
             for (Object[] in : inputs) {
@@ -117,10 +117,10 @@ public final class BenchmarkRunner {
                 String sha = sha256(file);
                 boolean verified = expected != null && expected.equals(sha);
                 if (expected != null && !verified) {
-                    throw new IllegalStateException("SHA-256 de " + file + " = " + sha + " difere do esperado " + expected
-                            + ". O dataset não é o canônico; apague-o e rode novamente.");
+                    throw new IllegalStateException("SHA-256 of " + file + " = " + sha + " differs from expected " + expected
+                            + ". The dataset is not the canonical one; delete it and run again.");
                 }
-                log("Dataset %s  sha256=%s%s", name, sha, verified ? "  [verificado]" : "");
+                log("Dataset %s  sha256=%s%s", name, sha, verified ? "  [verified]" : "");
 
                 long t0 = System.nanoTime();
                 SegyIO.SegyDataset ds = SegyIO.read(file);
@@ -140,7 +140,7 @@ public final class BenchmarkRunner {
         Files.writeString(outDir.resolve("results.json"), toJson(env, datasets, results));
         Files.writeString(outDir.resolve("results.csv"), toCsv(results));
         Files.writeString(outDir.resolve("summary.md"), toMarkdown(env, datasets, results));
-        log("Resultados gravados em %s", outDir.toAbsolutePath());
+        log("Results written to %s", outDir.toAbsolutePath());
     }
 
     // ----------------------------------------------------------------------------------------
@@ -181,7 +181,7 @@ public final class BenchmarkRunner {
             logResult(r);
         }
 
-        // ---- Baselines lossless sobre float32 big-endian ----
+        // ---- Lossless baselines on big-endian float32 ----
         byte[] rawBytes = rawSampleBytes(ds);
         out.add(baseline(info, "deflate-6", rawBytes, false, 6, warmup, iterations));
         out.add(baseline(info, "deflate-9", rawBytes, false, 9, warmup, iterations));
@@ -199,7 +199,7 @@ public final class BenchmarkRunner {
             dec[0] = shuffle ? unshuffle4(inflated) : inflated;
         });
         if (!Arrays.equals(raw, dec[0])) {
-            throw new IllegalStateException(codec + " não reproduziu os bytes originais");
+            throw new IllegalStateException(codec + " did not reproduce the original bytes");
         }
         Result r = new Result(info.name(), codec, "LOSSLESS", 32, level, raw.length, info.fileBytes(), comp[0].length,
                 c, d, Quality.lossless(raw.length / 4), sha256(comp[0]));
@@ -216,7 +216,7 @@ public final class BenchmarkRunner {
             }
         }
         for (int i = 0; i < traces.length; i++) {
-            if (traces[i] == null) throw new IllegalStateException("traço " + i + " ausente no volume 3D");
+            if (traces[i] == null) throw new IllegalStateException("trace " + i + " missing from the 3D volume");
         }
         return Arrays.asList(traces);
     }
@@ -231,7 +231,7 @@ public final class BenchmarkRunner {
         return bb.array();
     }
 
-    /** Byte-shuffle (estilo Blosc/HDF5): agrupa o byte k de cada float32. */
+    /** Byte-shuffle (Blosc/HDF5 style): groups byte k of every float32 together. */
     static byte[] shuffle4(byte[] in) {
         int n = in.length / 4;
         byte[] out = new byte[in.length];
@@ -298,7 +298,7 @@ public final class BenchmarkRunner {
         env.put("javaVersion", System.getProperty("java.version"));
         env.put("javaVendor", System.getProperty("java.vendor"));
         env.put("jvmName", System.getProperty("java.vm.name"));
-        // só flags de VM relevantes (-X / -XX); evita vazar propriedades de ambiente (proxy, etc.)
+        // only relevant VM flags (-X / -XX); avoids leaking environment properties (proxy, etc.)
         env.put("jvmArgs", ManagementFactory.getRuntimeMXBean().getInputArguments().stream()
                 .filter(a -> a.startsWith("-X")).collect(Collectors.joining(" ")));
         env.put("gc", ManagementFactory.getGarbageCollectorMXBeans().stream()
@@ -318,7 +318,7 @@ public final class BenchmarkRunner {
                 }
             }
         } catch (IOException ignored) {
-            // cai no fallback
+            // fall through to the fallback
         }
         String env = System.getenv("PROCESSOR_IDENTIFIER"); // Windows
         return env != null ? env : "unknown";
@@ -409,20 +409,20 @@ public final class BenchmarkRunner {
     private static String toMarkdown(Map<String, String> env, List<DatasetInfo> datasets, List<Result> results) {
         StringBuilder sb = new StringBuilder();
         sb.append("# SDC Benchmark — ").append(env.get("label")).append("\n\n");
-        sb.append("## Ambiente\n\n| Campo | Valor |\n|---|---|\n");
+        sb.append("## Environment\n\n| Field | Value |\n|---|---|\n");
         env.forEach((k, v) -> sb.append("| ").append(k).append(" | ").append(v.isEmpty() ? "—" : v.replace("|", "\\|")).append(" |\n"));
 
-        sb.append("\n## Datasets\n\n| Dataset | Origem | Grade (IL×XL×amostras) | Traços | Tamanho SEG-Y | SHA-256 | Verificado |\n|---|---|---|---|---|---|---|\n");
+        sb.append("\n## Datasets\n\n| Dataset | Source | Grid (IL×XL×samples) | Traces | SEG-Y size | SHA-256 | Verified |\n|---|---|---|---|---|---|---|\n");
         for (DatasetInfo d : datasets) {
             sb.append(String.format(Locale.ROOT, "| %s | %s | %d × %d × %d | %d | %.2f MiB | `%s` | %s |\n",
                     d.name(), d.source(), d.inlines(), d.xlines(), d.samplesPerTrace(), d.traces(),
-                    d.fileBytes() / 1048576.0, d.sha256(), d.checksumVerified() ? "sim" : "n/a"));
+                    d.fileBytes() / 1048576.0, d.sha256(), d.checksumVerified() ? "yes" : "n/a"));
         }
 
         for (DatasetInfo d : datasets) {
-            sb.append("\n## Resultados — ").append(d.name()).append("\n\n");
-            sb.append("Razão = bytes brutos dos traços (float32) / bytes do arquivo comprimido. Throughput sobre os bytes brutos, pela mediana.\n\n");
-            sb.append("| Codec | Profile | Bits | Razão | bits/amostra | Compressão (ms) | Descompressão (ms) | Comp. MiB/s | Desc. MiB/s | SNR (dB) | PSNR (dB) | NRMSE (%) | Erro abs. máx. |\n");
+            sb.append("\n## Results — ").append(d.name()).append("\n\n");
+            sb.append("Ratio = raw trace bytes (float32) / compressed file bytes. Throughput over the raw bytes, using the median.\n\n");
+            sb.append("| Codec | Profile | Bits | Ratio | bits/sample | Compression (ms) | Decompression (ms) | Comp. MiB/s | Decomp. MiB/s | SNR (dB) | PSNR (dB) | NRMSE (%) | Max abs. error |\n");
             sb.append("|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|\n");
             for (Result x : results) {
                 if (!x.dataset().equals(d.name())) continue;
@@ -503,7 +503,7 @@ public final class BenchmarkRunner {
         Map<String, List<String>> m = new LinkedHashMap<>();
         for (int i = 0; i < args.length; i++) {
             String a = args[i];
-            if (!a.startsWith("--")) throw new IllegalArgumentException("argumento inesperado: " + a);
+            if (!a.startsWith("--")) throw new IllegalArgumentException("unexpected argument: " + a);
             String key = a.substring(2);
             String value = "true";
             int eq = key.indexOf('=');
@@ -529,17 +529,17 @@ public final class BenchmarkRunner {
 
     private static void printHelp() {
         System.out.println("""
-                Uso: java -jar sdc-bench-jar-with-dependencies.jar [opções]
+                Usage: java -jar sdc-bench-jar-with-dependencies.jar [options]
 
-                  --presets tiny,small,medium   datasets sintéticos (default: small,medium; 'none' desativa)
-                  --segy <arquivo.sgy>          SEG-Y externo adicional (repetível; formato 1 ou 5)
-                  --data-dir <dir>              onde gerar/ler os datasets (default: benchmark/data)
-                  --out <dir>                   diretório de saída (default: benchmark/results/local)
-                  --warmup <n>                  iterações de aquecimento descartadas (default: 2)
-                  --iterations <n>              iterações medidas (default: 5)
-                  --block il,xl,t               bloco 3D (default: 8,8,0; 0 = tempo inteiro)
-                  --label <texto>               rótulo do run
-                  --git-commit <sha>            commit avaliado (preenchido pelo script)
+                  --presets tiny,small,medium   synthetic datasets (default: small,medium; 'none' disables)
+                  --segy <file.sgy>             additional external SEG-Y (repeatable; format 1 or 5)
+                  --data-dir <dir>              where to generate/read datasets (default: benchmark/data)
+                  --out <dir>                   output directory (default: benchmark/results/local)
+                  --warmup <n>                  discarded warmup iterations (default: 2)
+                  --iterations <n>              measured iterations (default: 5)
+                  --block il,xl,t               3D block (default: 8,8,0; 0 = full time axis)
+                  --label <text>                run label
+                  --git-commit <sha>            commit under test (filled in by the script)
                 """);
     }
 }

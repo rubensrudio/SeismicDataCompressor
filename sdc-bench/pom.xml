@@ -9,7 +9,7 @@
   </parent>
   <artifactId>sdc-bench</artifactId>
   <name>SDC Benchmark</name>
-  <description>Benchmark reprodutível: dataset sintético determinístico + harness de medição</description>
+  <description>Reproducible benchmark: deterministic synthetic dataset + measurement harness</description>
 
   <dependencies>
     <dependency>
