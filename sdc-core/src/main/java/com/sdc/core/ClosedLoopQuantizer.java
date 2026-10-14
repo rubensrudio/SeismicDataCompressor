@@ -14,8 +14,9 @@ import java.io.ByteArrayOutputStream;
  * which the loop corrects on the following samples).</p>
  *
  * <p>Payload layout (all codecs): {@code [FORMAT_CLOSED_LOOP][bits][deflate(stream)]} where the
- * stream holds one signed byte per sample when {@code bits <= 8} and one big-endian short
- * otherwise. Legacy payloads are raw zlib streams, whose first byte is always {@code 0x78}
+ * stream holds one signed byte per sample when {@code bits <= 8}; otherwise each sample is a
+ * 16-bit value stored as two byte planes (all high bytes, then all low bytes), which Deflate
+ * compresses much better than interleaved shorts because the high bytes are mostly 0x00/0xFF. Legacy payloads are raw zlib streams, whose first byte is always {@code 0x78}
  * for {@link java.util.zip.Deflater}, so the two layouts cannot be confused.</p>
  */
 public final class ClosedLoopQuantizer {
@@ -66,11 +67,11 @@ public final class ClosedLoopQuantizer {
             stream = new byte[q.length];
             for (int i = 0; i < q.length; i++) stream[i] = (byte) q[i];
         } else {
-            stream = new byte[q.length * 2];
-            int j = 0;
-            for (int v : q) {
-                stream[j++] = (byte) (v >>> 8);
-                stream[j++] = (byte) v;
+            int n = q.length;
+            stream = new byte[n * 2];
+            for (int i = 0; i < n; i++) {
+                stream[i] = (byte) (q[i] >>> 8);   // high-byte plane
+                stream[n + i] = (byte) q[i];       // low-byte plane
             }
         }
         byte[] deflated = TraceBlockCodec.deflate(stream, deflaterLevel);
@@ -101,10 +102,10 @@ public final class ClosedLoopQuantizer {
             if (stream.length != expectedSamples * 2) {
                 throw new IllegalStateException("expected " + expectedSamples + " samples but got " + stream.length / 2);
             }
-            int j = 0;
-            for (int i = 0; i < q.length; i++) {
-                int hi = stream[j++];          // sign-extended
-                int lo = stream[j++] & 0xFF;
+            int n = expectedSamples;
+            for (int i = 0; i < n; i++) {
+                int hi = stream[i];            // sign-extended
+                int lo = stream[n + i] & 0xFF;
                 q[i] = (short) ((hi << 8) | lo);
             }
         }
