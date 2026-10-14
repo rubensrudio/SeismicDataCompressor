@@ -118,7 +118,9 @@ def main():
 
     rows = list(csv.DictReader(open(os.path.join(args.results, "rd.csv"))))
     ext_rows = []
-    report = ["# Rate–distortion report", "",
+    import importlib.metadata as md
+    versions = ", ".join(f"{p} {md.version(p)}" for p in ("zfpy", "hdf5plugin", "h5py", "numpy"))
+    report = ["# Rate–distortion report", "", f"External codec libraries: {versions}.", "",
               "bits/sample over raw float32 samples (32 = uncompressed); SNR in dB on the original amplitudes.",
               "External codecs (ZFP, SZ3) run in Python on exactly the same samples.", ""]
 

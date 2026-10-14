@@ -93,4 +93,27 @@ class ClosedLoopCodecTest {
                         assertEquals(cube[i][j][k], rec[i][j][k], tol, "bits=" + bits);
         }
     }
+
+    @Test
+    void legacyVolumePayloadIsStillDecodedWithTheCallerProfile() {
+        int ni = 3, nj = 4, nt = 64;
+        float[][][] norm = new float[ni][nj][nt];
+        for (int i = 0; i < ni; i++)
+            for (int j = 0; j < nj; j++)
+                for (int k = 0; k < nt; k++)
+                    norm[i][j][k] = (float) (0.8 * Math.sin((k + i + j) * 0.2));
+        // payload exactly as written before the closed-loop revision: open-loop residual, 16 bits
+        float[] flat = VolumeBlock3DCodec.flatten3D(VolumeBlock3DCodec.residualEncode(norm));
+        short[] q = LinearQuantizer.encode(flat, CompressionProfile.defaultHighQuality());
+        byte[] legacy = TraceBlockCodec.deflate(TraceBlockCodec.shortsToBytes(q), 9);
+        assertEquals((byte) 0x78, legacy[0]);
+        VolumeBlock3D meta = new VolumeBlock3D(0, 0, 0, new float[ni][nj][nt]);
+        float[][][] rec = VolumeBlock3DCompressor.decompressBlock(
+                new VolumeBlock3DCompressor.CompressedVolumeBlock3D(meta, -1f, 1f, legacy),
+                CompressionProfile.defaultHighQuality());
+        for (int i = 0; i < ni; i++)
+            for (int j = 0; j < nj; j++)
+                for (int k = 0; k < nt; k++)
+                    assertEquals(norm[i][j][k], rec[i][j][k], 0.01, "voxel " + i + "," + j + "," + k);
+    }
 }

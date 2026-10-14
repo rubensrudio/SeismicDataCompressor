@@ -14,14 +14,14 @@ import java.util.zip.Inflater;
 
 /**
  * Hybrid neural codec for 3D seismic volumes: a learned autoencoder predicts each section, and
- * the prediction residual is uniformly quantized, so the maximum error is guaranteed.
+ * the prediction residual is uniformly quantized, so the maximum error is bounded.
  *
  * <pre>
  *   x_n   = x / s                      s = peak |x| of the volume (stored)
  *   y     = round(encoder(x_n))        per inline section (crossline x time), int8 latents
  *   p     = decoder(y)                 prediction, identical on encoder and decoder side
  *   q     = round((x_n - p) / step)    step = 1 / (2^(bits-1) - 1)
- *   x_hat = s * (p + q * step)         |x - x_hat| <= s * step / 2 for every sample
+ *   x_hat = s * (p + q * step)         |x - x_hat| <= s * step / 2, up to float32 rounding (~1 ulp of x)
  * </pre>
  *
  * <p>Payload = deflate(latents) + deflate(residual indices, stored as byte planes). With {@link Predictor#NONE} the

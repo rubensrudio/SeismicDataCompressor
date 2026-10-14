@@ -16,7 +16,7 @@ benchmark/
         └── run.log           # console output
 ```
 
-The code lives in the [`sdc-bench`](../sdc-bench) Maven module, which depends only on `sdc-core` (no TensorFlow).
+The code lives in the [`sdc-bench`](../sdc-bench) Maven module, which depends on `sdc-core` and on the pure-Java neural codec in `sdc-ai` (TensorFlow Java is excluded).
 
 ## How to run
 
@@ -26,7 +26,7 @@ Prerequisites: JDK 17+ and Maven 3.9 (same as the rest of the project). About 3 
 ./benchmark/run-benchmark.sh
 ```
 
-This builds `sdc-core` + `sdc-bench`, generates the datasets (`small` and `medium`) if needed, checks each one's SHA-256, runs the benchmark and writes to `benchmark/results/<YYYY-MM-DD>_<os>-<arch>-<N>cpu/`. It takes about 2 minutes on the reference machine.
+This builds `sdc-core` + `sdc-bench`, generates the datasets (`small` and `medium`) if needed, checks each one's SHA-256, runs the benchmark and writes to `benchmark/results/<YYYY-MM-DD>_<os>-<arch>-<N>cpu/`. Without a neural model it takes about 2 minutes; with the neural codec and `RD=1` the reference run took about 45 minutes on 2 vCPUs (the neural profiles alone take ~22 minutes on `medium`).
 
 Environment variables:
 
@@ -41,6 +41,8 @@ Environment variables:
 | `LABEL` | `<os>-<arch>-<N>cpu` | run label (becomes part of the directory name) |
 | `OUT` | `benchmark/results/<date>_<label>` | output directory |
 | `SKIP_BUILD` | `0` | `1` skips `mvn package` |
+| `MODEL` | `auto` | neural model (`.sdcnn`); `auto` = `sdc-ai/models/sdc-ae-v1.sdcnn` if present, `none` disables the neural codecs |
+| `RD` | `0` | `1` adds the rate–distortion sweep (`rd.csv`) |
 
 Examples:
 
@@ -59,7 +61,7 @@ Real seismic data tends to be large and restrictively licensed, so it can't be v
 - reflectors dipping in inline and xline with a gentle sinusoidal fold (one every ~25 samples)
 - one planar normal fault (6.5-sample throw)
 - 25 Hz Ricker wavelet, dt = 4 ms
-- exponential attenuation with time and additive Gaussian noise (2% of scale)
+- exponential attenuation with time and additive Gaussian noise (`noiseLevel` 0.02 → σ = 6 amplitude units, i.e. about 20% of the signal RMS; the noisy `medium` volume is 13.8 dB from its noise-free version — a noisy dataset)
 - SEG-Y rev1, format 5 (IEEE float32), inline at trace-header bytes 189-192 and xline at bytes 193-196
 
 | Preset | Grid (IL × XL × samples) | Traces | Size | SHA-256 |
@@ -104,7 +106,7 @@ The SDC codecs run with the three `CompressionProfile` profiles: `HIGH_QUALITY` 
 - **PSNR (dB)** = 20·log10((max − min) / RMSE), using the volume's dynamic range as the peak
 - **NRMSE (%)** = RMSE / RMS(x) × 100, and **maximum absolute error**
 
-**Rate–distortion sweep (`RD=1`).** Profiles compare codecs at different qualities, which can mislead. The sweep runs every bit depth from 4 to 16 (Deflate 9 everywhere) for `sdc-3d`, `uniform-quant` and `neural-hybrid`, plus one `neural-only` point (latents only, no residual), and writes `rd.csv`. `benchmark/rd_report.py` then adds two external, state-of-the-art scientific compressors on exactly the same samples — **ZFP** (fixed accuracy, `zfpy`) and **SZ3** (absolute error bound, `hdf5plugin`) — and reports:
+**Rate–distortion sweep (`RD=1`).** Profiles compare codecs at different qualities, which can mislead. The sweep runs bit depths 4–12, 14 and 16 (Deflate 9 everywhere) for `sdc-3d`, `uniform-quant` and `neural-hybrid`, plus one `neural-only` point (latents only, no residual), and writes `rd.csv`. `benchmark/rd_report.py` then adds two external, state-of-the-art scientific compressors on exactly the same samples — **ZFP** (fixed accuracy, `zfpy`) and **SZ3** (absolute error bound, `hdf5plugin`) — and reports:
 
 - bits/sample needed to reach target SNRs (piecewise-linear interpolation between measured points);
 - **BD-rate**: the average relative difference in bits/sample at equal SNR over the SNR range two curves share (piecewise-linear in log2(bits/sample); the classic cubic fit is not used because Deflate's efficiency changes in steps);
@@ -119,7 +121,7 @@ python benchmark/rd_report.py --results benchmark/results/<run> --segy synthetic
 
 ## Reference results
 
-Run [`results/2026-10-14_linux-x86_64-2cpu`](results/2026-10-14_linux-x86_64-2cpu/summary.md), commit `69fc8c8`, clean tree, `RD=1`. Rate–distortion report: [`rd_report.md`](results/2026-10-14_linux-x86_64-2cpu/rd_report.md).
+Run [`results/2026-10-14_linux-x86_64-2cpu`](results/2026-10-14_linux-x86_64-2cpu/summary.md): Java measurements from commit `69fc8c8` (clean tree, `RD=1`); the external baselines, BD-rate and charts in [`rd_report.md`](results/2026-10-14_linux-x86_64-2cpu/rd_report.md) were produced by `benchmark/rd_report.py` (library versions recorded at the top of the report: zfpy 1.0.1, hdf5plugin 7.1.0 for SZ3, h5py 3.16.0, numpy 2.5.3).
 
 **Hardware/software:** Intel Xeon @ 2.80 GHz, 2 vCPUs, 8 GiB RAM, container · OpenJDK 21.0.12 (G1, fixed 3 GiB heap). Full details in [`hardware.txt`](results/2026-10-14_linux-x86_64-2cpu/hardware.txt). Maven Central was not reachable from that machine, so the benchmark jar was compiled with `javac` from the same commit; the Maven build and all tests run in CI (`.github/workflows/build.yml`).
 
@@ -130,10 +132,10 @@ Run [`results/2026-10-14_linux-x86_64-2cpu`](results/2026-10-14_linux-x86_64-2cp
 | sdc-2d | HIGH_QUALITY | 2.06:1 | 15.57 | 1712 ± 69 | 396 ± 16 | 85.97 | 0.0030 |
 | sdc-2d | BALANCED | 2.69:1 | 11.89 | 2394 ± 61 | 372 ± 19 | 61.88 | 0.048 |
 | sdc-2d | HIGH_COMPRESSION | 4.97:1 | 6.44 | 937 ± 118 | 253 ± 14 | 37.74 | 0.77 |
-| sdc-3d | HIGH_QUALITY | 2.38:1 | 13.46 | 1599 ± 31 | 374 ± 13 | 85.22 | 0.0031 |
+| sdc-3d | HIGH_QUALITY | 2.38:1 | 13.46 | 1598 ± 31 | 374 ± 13 | 85.22 | 0.0031 |
 | sdc-3d | BALANCED | 3.27:1 | 9.78 | 3479 ± 98 | 281 ± 10 | 61.13 | 0.049 |
 | sdc-3d | HIGH_COMPRESSION | 6.06:1 | 5.28 | 1038 ± 54 | 316 ± 11 | 36.99 | 0.78 |
-| neural-hybrid | HIGH_QUALITY | 2.46:1 | 13.03 | 87880 ± 2188 | 65684 ± 3158 | 84.36 | 0.0032 |
+| neural-hybrid | HIGH_QUALITY | 2.46:1 | 13.03 | 87880 ± 2188 | 65684 ± 3157 | 84.36 | 0.0032 |
 | neural-hybrid | BALANCED | 3.33:1 | 9.62 | 85512 ± 373 | 67475 ± 2184 | 60.27 | 0.050 |
 | neural-hybrid | HIGH_COMPRESSION | 6.36:1 | 5.03 | 82619 ± 742 | 62227 ± 738 | 36.13 | 0.81 |
 | uniform-quant | HIGH_QUALITY | 2.29:1 | 13.96 | 1351 ± 21 | 227 ± 6 | 84.36 | 0.0032 |
@@ -151,15 +153,17 @@ bits/sample needed to reach a target SNR (lower is better):
 |---|---:|---:|---:|---:|---:|---:|---:|
 | SDC 3D (closed-loop DPCM) | 1.49 | 2.47 | 3.37 | 4.22 | 6.27 | 8.46 | 9.63 |
 | Uniform quantization (no prediction) | 1.63 | 2.80 | 3.86 | 4.85 | 7.12 | 8.70 | 9.67 |
-| **Neural hybrid (autoencoder + residual)** | **0.93** | 2.21 | 3.06 | 3.95 | 6.23 | 8.06 | 9.51 |
+| Neural hybrid (autoencoder + residual) | **0.93** | 2.21 | 3.06 | 3.95 | 6.23 | 8.06 | 9.51 |
 | ZFP (fixed accuracy) | 2.20 | 3.09 | 3.92 | 4.75 | 6.43 | 8.09 | 9.75 |
 | SZ3 (absolute error bound) | 1.12 | **1.92** | **2.67** | **3.48** | **5.11** | **6.79** | **8.47** |
 
-Neural only (latents, no residual): **0.427 bits/sample (75:1) at 13.25 dB**.
+Neural only (latents, no residual): **0.427 bits/sample (75:1) at 13.25 dB**, not counting the 131 KB model, which is shared by every file (≈0.06 bits/sample if charged to this volume alone).
+
+Values are interpolated between measured points (piecewise-linear in log2(bits/sample)). The 15 dB column sits between distant points: measured, the hybrid needs 0.70 bits/sample at 13.9 dB, uniform quantization 1.10 at 12.2 dB, SDC 3D 1.12 at 12.6 dB (see `rd.csv`). Bold = lowest per column.
 
 | BD-rate (bits/sample at equal SNR) | vs. SDC 3D | vs. uniform quantization |
 |---|---:|---:|
-| Neural hybrid | **−5.7%** | **−12.2%** |
+| Neural hybrid | −5.7% | −12.2% |
 | Uniform quantization | +7.4% | — |
 | ZFP | +7.1% | −0.4% |
 | SZ3 | −16.3% | −22.4% |
@@ -169,22 +173,22 @@ Neural only (latents, no residual): **0.427 bits/sample (75:1) at 13.25 dB**.
 ### What the numbers show
 
 1. **The two codec defects found on 2026-10-12 are fixed.** `sdc-2d` `BALANCED`/`HIGH_COMPRESSION` now reach 61.9 / 37.7 dB (they were at about 0 dB), and `sdc-3d` `HIGH_COMPRESSION` reaches 37.0 dB at 6.06:1 (it was 9.6 dB at 4.79:1). Both codecs now use closed-loop DPCM and store the bit depth in each payload.
-2. **The neural predictor measurably reduces size.** Against the same quantizer without the network (same step, same error bound, same container), the hybrid needs **12.2% fewer bits on average** at equal SNR, and **43% fewer at 15 dB** (0.93 vs 1.63 bits/sample). Against SDC 3D the average gain is 5.7%, and 38% at 15 dB.
-3. **The gain concentrates at low rates.** At high fidelity the residual is dominated by the 2% Gaussian noise of the data, which no predictor can remove, so all codecs converge.
-4. **SZ3 is the strongest codec overall** (−16.3% vs SDC 3D). The neural hybrid beats SZ3 only at the lowest rates (15 dB: 0.93 vs 1.12 bits/sample). ZFP is weaker than every predictive codec here.
-5. **The neural codec is slow:** about 85 s to compress and 65 s to decompress 62.5 MiB in pure Java on 2 vCPUs — roughly 50–80× slower than SDC 3D to compress and about 200× slower to decompress.
+2. **The neural predictor measurably reduces size.** Against the same quantizer without the network (same step, same error bound, same container), the hybrid needs **12.2% fewer bits on average** at equal SNR, and about **43% fewer at 15 dB** (0.93 vs 1.63 bits/sample, interpolated). Against SDC 3D the average gain is 5.7%, and about 38% at 15 dB.
+3. **The gain concentrates at low rates.** At high fidelity the residual is dominated by the data's random noise, which no predictor can remove, so the codecs that share this project's quantizer + Deflate design converge; SZ3 keeps an advantage there (8.47 vs 9.51–9.75 bits/sample at 60 dB) thanks to its own entropy coder.
+4. **SZ3 is the strongest codec overall** (−16.3% vs SDC 3D). The neural hybrid beats SZ3 only at the lowest rates (15 dB: 0.93 vs 1.12 bits/sample). ZFP is weaker on average (BD-rate +7.1% vs SDC 3D) but beats SDC 3D between about 45 and 55 dB.
+5. **The neural codec is slow:** about 85 s to compress and 65 s to decompress 62.5 MiB in pure Java on 2 vCPUs — 25–80× slower than SDC 3D to compress and 175–240× slower to decompress (up to ~390× slower than uniform quantization).
 6. **Neural only** stores just the latents: 0.427 bits/sample (75:1) at 13.25 dB. That SNR is close to the data's own signal-to-noise ratio (13.81 dB): the reconstruction keeps the reflectors and drops most of the noise. Against the noise-free version of the same volume it reaches **19.86 dB**, better than the noisy input itself (`java -cp <bench jar> com.sdc.bench.CleanSignalCheck medium`). Whether discarding noise is acceptable depends on the use; the hybrid modes keep it.
 
 ### Out-of-distribution check
 
-A model trained on synthetic data must be checked on data it was not designed for. Run [`results/2026-10-14_linux-x86_64-2cpu-ood-noise5`](results/2026-10-14_linux-x86_64-2cpu-ood-noise5/rd_report.md): a 128 × 128 × 1000 volume with **5% noise instead of 2%** and seed 3000 (`TrainingDataGenerator /tmp/ood 1 3000 128 128 1000 0.05`).
+A model trained on synthetic data must be checked on data it was not designed for. Run [`results/2026-10-14_linux-x86_64-2cpu-ood-noise5`](results/2026-10-14_linux-x86_64-2cpu-ood-noise5/rd_report.md): a 128 × 128 × 1000 volume with `noiseLevel` **0.05 instead of 0.02** (σ = 15 instead of 6) and seed 3000 (`TrainingDataGenerator /tmp/ood 1 3000 128 128 1000 0.05`; SHA-256 starts with `57e0bd`), measured from commit `5fb932d`.
 
 | BD-rate (bits/sample at equal SNR) | vs. SDC 3D | vs. uniform quantization |
 |---|---:|---:|
 | Neural hybrid | −0.9% | −5.3% |
 | SZ3 | −12.1% | −16.0% |
 
-**The gain shrinks under this distribution shift**: the hybrid still beats plain quantization (−5.3%), but it is only at parity with SDC 3D, and the neural-only point drops to 7.65 dB. Real data, which differs much more from the training set than this, will need its own training and evaluation.
+**The gain shrinks under this distribution shift.** The hybrid still beats plain quantization on average (−5.3%), but against SDC 3D it is at parity on average (−0.9%), has no advantage at 15 dB (2.36 vs 2.37 bits/sample) and **loses at 40 dB** (7.42 vs 7.04, also behind ZFP's 7.33). The neural-only point drops to 7.65 dB. Real data, which differs much more from the training set than this, will need its own training and evaluation.
 
 ### Previous run (2026-10-12, before the fixes)
 
@@ -202,6 +206,6 @@ A model trained on synthetic data must be checked on data it was not designed fo
 - **Synthetic data only so far.** The neural model was trained on volumes from the same generator (different seeds). Real data is less regular; run with `SEGY=...` on public volumes (F3 Netherlands, Volve) before drawing conclusions for production data.
 - **Entropy coding is Deflate for every codec.** That keeps the comparison fair inside this project but penalizes all of them against SZ3, which uses its own Huffman + zstd stage.
 
-- The synthetic data has 2% Gaussian noise, which limits lossless compression. Real data (especially stacked and filtered) usually compresses better. Confirm with `SEGY=...`.
+- The synthetic data is noisy (σ ≈ 20% of the signal RMS), which limits lossless compression and makes high-fidelity lossy compression expensive for every codec. Real data (especially stacked and filtered) usually compresses better. Confirm with `SEGY=...`.
 - On a shared VM or container, the standard deviation is 2% to 10%. For fine-grained comparisons, increase `ITERATIONS` and close other processes. If you have host access, pin the CPU governor to `performance`.
 - This is a simple end-to-end harness, not JMH. It suits operations from hundreds of ms to seconds, like these, but not microbenchmarks.

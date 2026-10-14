@@ -145,9 +145,9 @@ Output will be in `dist/sdc-ui/`
 ### sdc-ai Module
 - Convolutional autoencoder (32.7k parameters) trained with TensorFlow on synthetic sections; training script and model metadata in `sdc-ai/training` and `sdc-ai/models`
 - Dependency-free `.sdcnn` model format and pure-Java inference, checked against TensorFlow outputs in the tests
-- `NeuralHybridCodec`: int8 latents + uniformly quantized residual, so the maximum error is bounded; a zero-prediction mode isolates what the network contributes
+- `NeuralHybridCodec`: int8 latents + uniformly quantized residual, so the maximum error is bounded (to within float32 rounding); a zero-prediction mode isolates what the network contributes
 - TensorFlow Java runtime placeholder (`AeRuntime`), not required by the codec
-- Limitations: trained and evaluated on synthetic data only; 50–200× slower than the classical codecs (see [`sdc-ai/README.md`](sdc-ai/README.md))
+- Limitations: trained and evaluated on synthetic data only; 25–90× slower to compress and 170–390× slower to decompress than the classical codecs (see [`sdc-ai/README.md`](sdc-ai/README.md))
 
 ## Project Structure
 

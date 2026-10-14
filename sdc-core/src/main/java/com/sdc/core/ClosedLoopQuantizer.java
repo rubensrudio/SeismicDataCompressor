@@ -10,8 +10,8 @@ import java.io.ByteArrayOutputStream;
  * The previous (open-loop) codecs predicted from the original samples while encoding and from
  * the reconstructed samples while decoding, so quantization error accumulated along the
  * prediction chain. Here the encoder runs the decoder's reconstruction internally, so the
- * error of every sample is bounded by half a quantization step (plus the rare overload case,
- * which the loop corrects on the following samples).</p>
+ * error of every sample is bounded by half a quantization step, up to float rounding (plus the
+ * rare overload case, which the loop corrects on the following samples).</p>
  *
  * <p>Payload layout (all codecs): {@code [FORMAT_CLOSED_LOOP][bits][deflate(stream)]} where the
  * stream holds one signed byte per sample when {@code bits <= 8}; otherwise each sample is a

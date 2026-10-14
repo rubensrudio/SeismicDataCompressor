@@ -1,5 +1,7 @@
 # Rate–distortion report
 
+External codec libraries: zfpy 1.0.1, hdf5plugin 7.1.0, h5py 3.16.0, numpy 2.5.3.
+
 bits/sample over raw float32 samples (32 = uncompressed); SNR in dB on the original amplitudes.
 External codecs (ZFP, SZ3) run in Python on exactly the same samples.
 
