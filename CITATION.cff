@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software or its benchmark results, please cite it as below."
+title: "SeismicDataCompressor (SDC): seismic volume compression with a reproducible benchmark"
+type: software
+authors:
+  - family-names: Rudio
+    given-names: Rubens
+    email: rubensrudio@gmail.com
+    # orcid: "https://orcid.org/0000-0000-0000-0000"   # add your ORCID iD here
+repository-code: "https://github.com/rubensrudio/SeismicDataCompressor"
+license: Apache-2.0
+keywords:
+  - seismic
+  - SEG-Y
+  - data compression
+  - lossy compression
+  - autoencoder
+  - neural compression
+  - Java
