@@ -34,11 +34,8 @@ public final class VolumeBlock3DCompressor {
      *
      *  1) calcula min/max do cubo
      *  2) normaliza para [-1,1]
-     *  3) aplica residual 3D
-     *  4) flatten para 1D
-     *  5) quantiza com LinearQuantizer (profile)
-     *  6) converte short[] -> byte[]
-     *  7) Deflate com nível do profile
+     *  3) closed-loop 3D DPCM, quantized with the profile's bit depth
+     *  4) self-describing payload (bit depth stored) + Deflate with the profile's level
      */
     public static CompressedVolumeBlock3D compressBlock(VolumeBlock3D block,
                                                         CompressionProfile profile) {
@@ -85,20 +82,11 @@ public final class VolumeBlock3DCompressor {
             }
         }
 
-        // 3) residual 3D
-        float[][][] residual = VolumeBlock3DCodec.residualEncode(norm);
+        // 3) closed-loop 3D DPCM + quantization (bit depth stored in the payload)
+        int[] q = VolumeBlock3DCodec.closedLoopEncode(norm, profile.effectiveBits());
 
-        // 4) flatten
-        float[] flat = VolumeBlock3DCodec.flatten3D(residual);
-
-        // 5) quantiza com profile (usa effectiveBits)
-        short[] q = LinearQuantizer.encode(flat, profile);
-
-        // 6) short[] -> bytes
-        byte[] rawBytes = TraceBlockCodec.shortsToBytes(q);
-
-        // 7) Deflate com nível do profile
-        byte[] compressed = TraceBlockCodec.deflate(rawBytes, profile.deflaterLevel());
+        // 4) self-describing payload + Deflate
+        byte[] compressed = ClosedLoopQuantizer.pack(q, profile.effectiveBits(), profile.deflaterLevel());
 
         return new CompressedVolumeBlock3D(block, min, max, compressed);
     }
@@ -106,12 +94,9 @@ public final class VolumeBlock3DCompressor {
     /**
      * Descompressão de um cubo 3D:
      *
-     *  1) Inflate (Deflate -> bytes)
-     *  2) bytes -> short[]
-     *  3) dequantiza para float[]
-     *  4) unflatten -> residual 3D
-     *  5) residualDecode 3D -> norm [-1,1]
-     *  6) denormaliza usando min/max
+     *  closed-loop payloads: bit depth read from the payload (profile ignored)
+     *  legacy payloads: open-loop residual decoded with the profile's bit depth
+     *  then denormalize with min/max
      */
     public static float[][][] decompressBlock(CompressedVolumeBlock3D cb,
                                               CompressionProfile profile) {
@@ -121,20 +106,20 @@ public final class VolumeBlock3DCompressor {
         int nj = meta.xlineCount;
         int nt = meta.timeCount;
 
-        // 1) Inflate
-        byte[] rawBytes = TraceBlockCodec.inflate(cb.payload);
-
-        // 2) bytes -> short[]
-        short[] q = TraceBlockCodec.bytesToShorts(rawBytes, ni * nj * nt);
-
-        // 3) dequantiza
-        float[] flat = LinearQuantizer.decode(q, profile.effectiveBits());
-
-        // 4) unflatten -> residual 3D
-        float[][][] residual = VolumeBlock3DCodec.unflatten3D(flat, ni, nj, nt);
-
-        // 5) residualDecode -> norm [-1,1]
-        float[][][] norm = VolumeBlock3DCodec.residualDecode(residual);
+        float[][][] norm;
+        if (ClosedLoopQuantizer.isClosedLoop(cb.payload)) {
+            // bit depth comes from the payload; the profile argument is ignored
+            int bits = ClosedLoopQuantizer.storedBits(cb.payload);
+            int[] q = ClosedLoopQuantizer.unpack(cb.payload, ni * nj * nt);
+            norm = VolumeBlock3DCodec.closedLoopDecode(q, ni, nj, nt, bits);
+        } else {
+            // legacy payload (open-loop residual, bit depth taken from the caller's profile)
+            byte[] rawBytes = TraceBlockCodec.inflate(cb.payload);
+            short[] q = TraceBlockCodec.bytesToShorts(rawBytes, ni * nj * nt);
+            float[] flat = LinearQuantizer.decode(q, profile.effectiveBits());
+            float[][][] residual = VolumeBlock3DCodec.unflatten3D(flat, ni, nj, nt);
+            norm = VolumeBlock3DCodec.residualDecode(residual);
+        }
 
         // 6) denormaliza para escala original
         float[][][] data = new float[ni][nj][nt];
