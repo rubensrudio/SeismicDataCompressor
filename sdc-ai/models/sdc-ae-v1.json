@@ -1,0 +1,20 @@
+{
+  "architecture": "conv-ae c1=16 c2=32 latent=8 factor=8 leaky=0.1",
+  "framework": "tensorflow 2.20.0",
+  "train_dir": "train",
+  "train_volumes": 10,
+  "val_volumes": 2,
+  "patch": [
+    64,
+    128
+  ],
+  "train_patches": 16000,
+  "epochs": 10,
+  "l1": 2e-05,
+  "seed": 7,
+  "val_mse_normalized": 0.0006112618139013648,
+  "val_snr_db_rounded_latents": 12.99285430673644,
+  "train_seconds": 1119.9,
+  "params": 32713,
+  "sha256": "b2ba8ca4ae7d805a2c6496627d6db037b4d8dad18523e58884c89f6e9a611665"
+}
