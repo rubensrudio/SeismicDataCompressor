@@ -1,0 +1,61 @@
+2026-10-14 13:35:41.265639: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2026-10-14 13:35:41.329640: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2026-10-14 13:35:42.963582: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+train volumes:
+  train-1000.sgy (64, 64, 1000)
+  train-1001.sgy (64, 64, 1000)
+  train-1002.sgy (64, 64, 1000)
+  train-1003.sgy (64, 64, 1000)
+  train-1004.sgy (64, 64, 1000)
+  train-1005.sgy (64, 64, 1000)
+  train-1006.sgy (64, 64, 1000)
+  train-1007.sgy (64, 64, 1000)
+  train-1008.sgy (64, 64, 1000)
+  train-1009.sgy (64, 64, 1000)
+val volumes:
+  train-2000.sgy (64, 64, 1000)
+  train-2001.sgy (64, 64, 1000)
+Epoch 1/10
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1791995748.631619    1151 meta_optimizer.cc:967] remapper failed: INVALID_ARGUMENT: Mutation::Apply error: fanout 'StatefulPartitionedCall/gradient_tape/ae_1/decoder_1/leaky_re_lu_3_1/LeakyRelu/LeakyReluGrad' exist for missing node 'StatefulPartitionedCall/ae_1/decoder_1/conv2d_4_1/BiasAdd'.
+500/500 - 93s - 185ms/step - latent_l1: 1.3912 - loss: 9.8792e-04 - mse: 9.6009e-04 - val_latent_l1: 1.0252 - val_loss: 8.4492e-04
+Epoch 2/10
+500/500 - 92s - 183ms/step - latent_l1: 1.6715 - loss: 8.1857e-04 - mse: 7.8514e-04 - val_latent_l1: 1.2723 - val_loss: 7.2117e-04
+Epoch 3/10
+500/500 - 114s - 228ms/step - latent_l1: 1.7887 - loss: 7.5277e-04 - mse: 7.1700e-04 - val_latent_l1: 1.3840 - val_loss: 6.8470e-04
+Epoch 4/10
+500/500 - 89s - 178ms/step - latent_l1: 1.8521 - loss: 7.0742e-04 - mse: 6.7038e-04 - val_latent_l1: 1.4418 - val_loss: 6.5211e-04
+Epoch 5/10
+500/500 - 142s - 285ms/step - latent_l1: 1.8891 - loss: 6.8879e-04 - mse: 6.5101e-04 - val_latent_l1: 1.4749 - val_loss: 6.3569e-04
+Epoch 6/10
+500/500 - 139s - 279ms/step - latent_l1: 1.9097 - loss: 6.7455e-04 - mse: 6.3636e-04 - val_latent_l1: 1.4928 - val_loss: 6.2569e-04
+Epoch 7/10
+500/500 - 140s - 280ms/step - latent_l1: 1.9247 - loss: 6.6631e-04 - mse: 6.2782e-04 - val_latent_l1: 1.5020 - val_loss: 6.1857e-04
+Epoch 8/10
+500/500 - 84s - 168ms/step - latent_l1: 1.9299 - loss: 6.6158e-04 - mse: 6.2298e-04 - val_latent_l1: 1.5085 - val_loss: 6.1324e-04
+Epoch 9/10
+500/500 - 84s - 168ms/step - latent_l1: 1.9333 - loss: 6.5875e-04 - mse: 6.2009e-04 - val_latent_l1: 1.5118 - val_loss: 6.1173e-04
+Epoch 10/10
+500/500 - 84s - 168ms/step - latent_l1: 1.9371 - loss: 6.5756e-04 - mse: 6.1881e-04 - val_latent_l1: 1.5134 - val_loss: 6.1126e-04
+{
+  "architecture": "conv-ae c1=16 c2=32 latent=8 factor=8 leaky=0.1",
+  "framework": "tensorflow 2.20.0",
+  "train_dir": "train",
+  "train_volumes": 10,
+  "val_volumes": 2,
+  "patch": [
+    64,
+    128
+  ],
+  "train_patches": 16000,
+  "epochs": 10,
+  "l1": 2e-05,
+  "seed": 7,
+  "val_mse_normalized": 0.0006112618139013648,
+  "val_snr_db_rounded_latents": 12.99285430673644,
+  "train_seconds": 1119.9,
+  "params": 32713,
+  "sha256": "b2ba8ca4ae7d805a2c6496627d6db037b4d8dad18523e58884c89f6e9a611665"
+}
+fixture written to /tmp/models/sdc-ae-v1-fixture.bin

@@ -32,3 +32,6 @@ benchmark/data/
 !benchmark/results/**/*.csv
 !benchmark/results/**/*.txt
 !benchmark/results/**/*.log
+# Python
+__pycache__/
+*.pyc

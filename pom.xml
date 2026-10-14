@@ -7,7 +7,7 @@
   <artifactId>sdc-parent</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>AI-Enhanced Seismic Data Compressor - Parent</name>
+  <name>SeismicDataCompressor (SDC) - Parent</name>
   <description>Multi-module project (core, ai, cli, service, ui)</description>
 
   <properties>

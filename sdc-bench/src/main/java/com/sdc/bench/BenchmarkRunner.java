@@ -1,5 +1,7 @@
 package com.sdc.bench;
 
+import com.sdc.ai.NeuralHybridCodec;
+import com.sdc.ai.nn.NeuralModel;
 import com.sdc.core.CompressionProfile;
 import com.sdc.core.Sdc3DFileReader;
 import com.sdc.core.Sdc3DFileWriter;
@@ -35,6 +37,9 @@ import java.util.zip.Inflater;
  *  - codec 2D  (SdcFileWriter.writeCompressed / SdcFileReader.readAllCompressed) × 3 profiles
  *  - codec 3D  (Sdc3DFileWriter.write3D / Sdc3DFileReader.read3D)               × 3 profiles
  *  - lossless baselines: Deflate 6, Deflate 9 and byte-shuffle + Deflate 9 on raw float32
+ *  - when a neural model is available (--model): neural-hybrid (autoencoder prediction + quantized
+ *    residual) and uniform-quant (same residual quantizer with zero prediction) × 3 profiles
+ *  - with --rd: a rate–distortion sweep over bit depths for sdc-3d, uniform-quant and neural-hybrid
  *
  * The SEG-Y is parsed only once and stays outside the measurements; timings cover
  * encoding/decoding of the .sdc container (including writing/reading the file).
@@ -53,6 +58,13 @@ public final class BenchmarkRunner {
             return (double) rawBytes / outputBytes;
         }
 
+        double bitsPerSample() {
+            return outputBytes * 8.0 / (rawBytes / 4.0);
+        }
+    }
+
+    record RdPoint(String dataset, String codec, int bits, long rawBytes, long outputBytes,
+                   long latentBytes, long residualBytes, Quality quality) {
         double bitsPerSample() {
             return outputBytes * 8.0 / (rawBytes / 4.0);
         }
@@ -79,6 +91,10 @@ public final class BenchmarkRunner {
         int[] block = Arrays.stream(first(opts, "block", "8,8,0").split(",")).mapToInt(s -> Integer.parseInt(s.trim())).toArray();
         String label = first(opts, "label", "local");
         String gitCommit = first(opts, "git-commit", "unknown");
+        NeuralModel model = loadModel(first(opts, "model", "auto"));
+        boolean rd = opts.containsKey("rd");
+        int[] rdBits = Arrays.stream(first(opts, "rd-bits", "4,5,6,7,8,9,10,11,12,14,16").split(","))
+                .mapToInt(x -> Integer.parseInt(x.trim())).toArray();
 
         Files.createDirectories(outDir);
         Path work = Files.createTempDirectory("sdc-bench-");
@@ -87,6 +103,7 @@ public final class BenchmarkRunner {
 
         List<DatasetInfo> datasets = new ArrayList<>();
         List<Result> results = new ArrayList<>();
+        List<RdPoint> rdPoints = new ArrayList<>();
 
         try {
             List<Object[]> inputs = new ArrayList<>();
@@ -130,23 +147,34 @@ public final class BenchmarkRunner {
                         ds.traceCount(), ds.samplesPerTrace, ds.traceGrid.inlineCount(), ds.traceGrid.xlineCount(), readMs);
                 datasets.add(info);
 
-                results.addAll(benchDataset(info, ds, work, warmup, iterations, block));
+                results.addAll(benchDataset(info, ds, work, warmup, iterations, block, model));
+                if (rd) {
+                    rdPoints.addAll(rdSweep(info, ds, work, block, model, rdBits));
+                }
             }
         } finally {
             deleteRecursively(work);
         }
 
         Map<String, String> env = environment(label, gitCommit, warmup, iterations, block);
+        env.put("neuralModel", model == null ? "none" : model.sha256Hex());
+        env.put("neuralModelMetadata", model == null ? "" : model.metadataJson());
+        env.put("neuralTiming", "warmup=" + Math.min(warmup, 1) + " iterations=" + Math.min(iterations, 2)
+                + " (neural codecs are slower; fewer repetitions)");
         Files.writeString(outDir.resolve("results.json"), toJson(env, datasets, results));
         Files.writeString(outDir.resolve("results.csv"), toCsv(results));
-        Files.writeString(outDir.resolve("summary.md"), toMarkdown(env, datasets, results));
+        if (!rdPoints.isEmpty()) {
+            Files.writeString(outDir.resolve("rd.csv"), toRdCsv(rdPoints));
+        }
+        Files.writeString(outDir.resolve("summary.md"), toMarkdown(env, datasets, results) + rdMarkdown(rdPoints));
         log("Results written to %s", outDir.toAbsolutePath());
     }
 
     // ----------------------------------------------------------------------------------------
 
     private static List<Result> benchDataset(DatasetInfo info, SegyIO.SegyDataset ds, Path work,
-                                             int warmup, int iterations, int[] block) throws Exception {
+                                             int warmup, int iterations, int[] block,
+                                             NeuralModel model) throws Exception {
         List<Result> out = new ArrayList<>();
         long raw = (long) ds.traceCount() * ds.samplesPerTrace * 4L;
         List<float[]> original = ds.traces.stream().map(TraceBlock::samples).collect(Collectors.toList());
@@ -179,6 +207,31 @@ public final class BenchmarkRunner {
                     raw, info.fileBytes(), Files.size(sdc), c, d, Quality.compare(original, rec), sha256(sdc));
             out.add(r);
             logResult(r);
+        }
+
+        // ---- Neural hybrid and its zero-prediction twin (same residual quantizer) ----
+        if (model != null) {
+            float[][][] vol = volumeOf(ds);
+            int nw = Math.min(warmup, 1), nit = Math.min(iterations, 2);
+            for (NeuralHybridCodec.Predictor pred : NeuralHybridCodec.Predictor.values()) {
+                String codec = pred == NeuralHybridCodec.Predictor.NEURAL ? "neural-hybrid" : "uniform-quant";
+                for (String pname : PROFILES) {
+                    CompressionProfile profile = CompressionProfile.fromProfileName(pname);
+                    NeuralHybridCodec.Settings st = new NeuralHybridCodec.Settings(
+                            pred, profile.effectiveBits(), profile.deflaterLevel());
+                    Path file = work.resolve(info.name() + "-" + codec + "-" + pname + ".sdcn");
+                    Timing c = Timing.measure(nw, nit, () ->
+                            Files.write(file, NeuralHybridCodec.encode(vol, model, st).payload()));
+                    float[][][][] holder = new float[1][][][];
+                    Timing d = Timing.measure(nw, nit, () ->
+                            holder[0] = NeuralHybridCodec.decode(Files.readAllBytes(file), model));
+                    Result r = new Result(info.name(), codec, pname, profile.effectiveBits(), profile.deflaterLevel(),
+                            raw, info.fileBytes(), Files.size(file), c, d,
+                            Quality.compare(original, tracesFromArray(ds, holder[0])), sha256(file));
+                    out.add(r);
+                    logResult(r);
+                }
+            }
         }
 
         // ---- Lossless baselines on big-endian float32 ----
@@ -219,6 +272,139 @@ public final class BenchmarkRunner {
             if (traces[i] == null) throw new IllegalStateException("trace " + i + " missing from the 3D volume");
         }
         return Arrays.asList(traces);
+    }
+
+
+    // ---------------------------------- neural / rate–distortion ---------------------------
+
+    private static NeuralModel loadModel(String spec) throws IOException {
+        if (spec.equalsIgnoreCase("none")) return null;
+        Path p = spec.equalsIgnoreCase("auto") ? Path.of("sdc-ai/models/sdc-ae-v1.sdcnn") : Path.of(spec);
+        if (!Files.exists(p)) {
+            if (spec.equalsIgnoreCase("auto")) {
+                log("No neural model at %s: neural codecs skipped (use --model <file.sdcnn>)", p);
+                return null;
+            }
+            throw new IllegalArgumentException("model not found: " + p);
+        }
+        NeuralModel m = NeuralModel.load(p);
+        log("Neural model %s sha256=%s", p, m.sha256Hex());
+        return m;
+    }
+
+    /** Volume as [inline][xline][time]; absent traces stay zero. */
+    static float[][][] volumeOf(SegyIO.SegyDataset ds) {
+        int ni = ds.traceGrid.inlineCount(), nj = ds.traceGrid.xlineCount();
+        float[][][] vol = new float[ni][nj][];
+        for (int i = 0; i < ni; i++) {
+            for (int j = 0; j < nj; j++) {
+                int idx = ds.traceGrid.traceIndexAt(i, j);
+                vol[i][j] = idx >= 0 ? ds.traces.get(idx).samples().clone() : new float[ds.samplesPerTrace];
+            }
+        }
+        return vol;
+    }
+
+    static List<float[]> tracesFromArray(SegyIO.SegyDataset ds, float[][][] vol) {
+        float[][] traces = new float[ds.traceCount()][];
+        for (int ii = 0; ii < ds.traceGrid.inlineCount(); ii++) {
+            for (int jj = 0; jj < ds.traceGrid.xlineCount(); jj++) {
+                int idx = ds.traceGrid.traceIndexAt(ii, jj);
+                if (idx >= 0) traces[idx] = vol[ii][jj];
+            }
+        }
+        return Arrays.asList(traces);
+    }
+
+    /**
+     * Rate–distortion sweep (Deflate level 9 everywhere). sdc-3d points are real files written and
+     * read back. For the neural codec the prediction is computed once; sizes come from real
+     * encodes, and the reconstruction of the first bit depth is checked bit-for-bit against a
+     * real decode before the cheaper {@link NeuralHybridCodec#reconstruct} is used for the rest.
+     */
+    private static List<RdPoint> rdSweep(DatasetInfo info, SegyIO.SegyDataset ds, Path work, int[] block,
+                                         NeuralModel model, int[] bitsList) throws Exception {
+        List<RdPoint> pts = new ArrayList<>();
+        long raw = (long) ds.traceCount() * ds.samplesPerTrace * 4L;
+        List<float[]> original = ds.traces.stream().map(TraceBlock::samples).collect(Collectors.toList());
+        log("Rate-distortion sweep on %s, bits=%s", info.name(), Arrays.toString(bitsList));
+
+        for (int bits : bitsList) {
+            CompressionProfile profile = new CompressionProfile(bits, 9, 100.0);
+            Path sdc = work.resolve(info.name() + "-rd-3d-" + bits + ".sdc");
+            Sdc3DFileWriter.write3D(sdc, ds, profile, block[0], block[1], block[2]);
+            Sdc3DFileReader.Sdc3DVolume v = Sdc3DFileReader.read3D(sdc, profile);
+            long size = Files.size(sdc);
+            pts.add(new RdPoint(info.name(), "sdc-3d", bits, raw, size, 0, size, Quality.compare(original, tracesFromVolume(ds, v))));
+        }
+
+        float[][][] vol = volumeOf(ds);
+        List<NeuralHybridCodec.Prediction> preds = new ArrayList<>();
+        preds.add(NeuralHybridCodec.predict(vol, null));
+        if (model != null) {
+            long t0 = System.nanoTime();
+            preds.add(NeuralHybridCodec.predict(vol, model));
+            log("  neural prediction computed in %.1f s", (System.nanoTime() - t0) / 1e9);
+        }
+        for (NeuralHybridCodec.Prediction p : preds) {
+            String codec = p.predictor() == NeuralHybridCodec.Predictor.NEURAL ? "neural-hybrid" : "uniform-quant";
+            boolean checked = false;
+            for (int bits : bitsList) {
+                NeuralHybridCodec.Settings st = new NeuralHybridCodec.Settings(p.predictor(), bits, 9);
+                NeuralHybridCodec.Encoded e = NeuralHybridCodec.encode(vol, p, st);
+                float[][][] rec = NeuralHybridCodec.reconstruct(vol, p, bits);
+                if (!checked) {
+                    float[][][] dec = NeuralHybridCodec.decode(e.payload(), model);
+                    if (!Arrays.deepEquals(dec, rec)) {
+                        throw new IllegalStateException(codec + ": reconstruct() differs from decode()");
+                    }
+                    checked = true;
+                }
+                pts.add(new RdPoint(info.name(), codec, bits, raw, e.payload().length, e.latentBytes(), e.residualBytes(),
+                        Quality.compare(original, tracesFromArray(ds, rec))));
+            }
+            if (p.predictor() == NeuralHybridCodec.Predictor.NEURAL) {
+                NeuralHybridCodec.Encoded e = NeuralHybridCodec.encode(vol, p,
+                        new NeuralHybridCodec.Settings(p.predictor(), 0, 9));
+                float[][][] dec = NeuralHybridCodec.decode(e.payload(), model);
+                pts.add(new RdPoint(info.name(), "neural-only", 0, raw, e.payload().length, e.latentBytes(), 0,
+                        Quality.compare(original, tracesFromArray(ds, dec))));
+            }
+        }
+        for (RdPoint pt : pts) {
+            log("  rd %-14s bits=%2d  %6.3f bits/sample  SNR=%6.2f dB", pt.codec(), pt.bits(), pt.bitsPerSample(), pt.quality().snrDb());
+        }
+        return pts;
+    }
+
+    private static String toRdCsv(List<RdPoint> pts) {
+        StringBuilder sb = new StringBuilder("dataset,codec,bits,raw_bytes,output_bytes,latent_bytes,residual_bytes,"
+                + "bits_per_sample,compression_ratio,snr_db,psnr_db,nrmse_percent,max_abs_error\n");
+        for (RdPoint p : pts) {
+            Quality q = p.quality();
+            sb.append(String.join(",", p.dataset(), p.codec(), String.valueOf(p.bits()), String.valueOf(p.rawBytes()),
+                    String.valueOf(p.outputBytes()), String.valueOf(p.latentBytes()), String.valueOf(p.residualBytes()),
+                    csvNum(p.bitsPerSample()), csvNum((double) p.rawBytes() / p.outputBytes()),
+                    csvNum(q.snrDb()), csvNum(q.psnrDb()), csvNum(q.nrmsePercent()), csvNum(q.maxAbsError()))).append('\n');
+        }
+        return sb.toString();
+    }
+
+    private static String rdMarkdown(List<RdPoint> pts) {
+        if (pts.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder("\n## Rate–distortion sweep (Deflate 9)\n\n");
+        sb.append("bits/sample over the raw float32 samples; SNR on the original amplitudes. ")
+          .append("neural-hybrid = autoencoder prediction + quantized residual; uniform-quant = same quantizer, zero prediction.\n\n");
+        sb.append("| Dataset | Codec | Bits | bits/sample | Ratio | SNR (dB) | Max abs. error | Latent bytes | Residual bytes |\n");
+        sb.append("|---|---|---:|---:|---:|---:|---:|---:|---:|\n");
+        for (RdPoint p : pts) {
+            Quality q = p.quality();
+            sb.append(String.format(Locale.ROOT, "| %s | %s | %s | %.3f | %.2f:1 | %s | %s | %d | %d |\n",
+                    p.dataset(), p.codec(), p.bits() == 0 ? "—" : String.valueOf(p.bits()), p.bitsPerSample(),
+                    (double) p.rawBytes() / p.outputBytes(), fmtDb(q.snrDb()), fmt(q.maxAbsError(), "%.4g"),
+                    p.latentBytes(), p.residualBytes()));
+        }
+        return sb.toString();
     }
 
     // ---------------------------------- baselines helpers -----------------------------------
@@ -510,7 +696,7 @@ public final class BenchmarkRunner {
             if (eq >= 0) {
                 value = key.substring(eq + 1);
                 key = key.substring(0, eq);
-            } else if (!key.equals("help") && i + 1 < args.length) {
+            } else if (!key.equals("help") && i + 1 < args.length && !args[i + 1].startsWith("--")) {
                 value = args[++i];
             }
             m.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
@@ -540,6 +726,9 @@ public final class BenchmarkRunner {
                   --block il,xl,t               3D block (default: 8,8,0; 0 = full time axis)
                   --label <text>                run label
                   --git-commit <sha>            commit under test (filled in by the script)
+                  --model <file.sdcnn|none>     neural model (default: sdc-ai/models/sdc-ae-v1.sdcnn if present)
+                  --rd                          also run the rate–distortion sweep (writes rd.csv)
+                  --rd-bits 4,6,8,...           bit depths of the sweep (default: 4..12,14,16)
                 """);
     }
 }

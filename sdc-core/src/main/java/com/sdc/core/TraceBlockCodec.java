@@ -6,17 +6,11 @@ import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 /**
- * Codec de bloco:
+ * Per-trace codec (2D container):
  *
- * Encode:
- *  1) min/max
- *  2) normaliza para [-1,1]
- *  3) delta encode
- *  4) quantiza para short
- *  5) converte short[] -> byte[]
- *  6) aplica Deflater (zlib) nos bytes
- *
- * Decode faz o inverso.
+ * Encode: min/max -> normalize to [-1,1] -> closed-loop DPCM (previous reconstructed sample as
+ * predictor) -> quantization with the profile's bit depth -> Deflate. See {@link ClosedLoopQuantizer}
+ * for the payload layout. Decode is the inverse and reads the bit depth from the payload.
  */
 public final class TraceBlockCodec {
 
@@ -26,49 +20,63 @@ public final class TraceBlockCodec {
         return compress(tb, CompressionProfile.defaultHighQuality());
     }
 
+    /**
+     * Closed-loop DPCM along the time axis: each sample is predicted from the previous
+     * <em>reconstructed</em> sample, and the residual is quantized with {@code profile.effectiveBits()}.
+     * The bit depth is stored in the payload, so decoding needs no profile.
+     */
     public static CompressedTraceBlock compress(TraceBlock tb, CompressionProfile profile) {
         float[] samples = tb.samples();
         int n = samples.length;
 
-        // 1) min/max
         float[] mm = Preprocessing.minMax(samples);
         float min = mm[0];
         float max = mm[1];
-
-        // 2) normalização
         float[] norm = Preprocessing.normalizeToMinusOneToOne(samples);
 
-        // 3) delta
-        float[] deltas = Preprocessing.deltaEncode(norm);
-
-        // 4) quantização, agora respeitando effectiveBits do profile
-        short[] q = LinearQuantizer.encode(deltas, profile);
-
-        // 5) short[] -> byte[]
-        byte[] rawBytes = shortsToBytes(q);
-
-        // 6) Deflater com nível vindo do profile
-        byte[] compressed = deflate(rawBytes, profile.deflaterLevel());
-
-        return new CompressedTraceBlock(tb.traceId(), min, max, n, compressed);
+        int bits = profile.effectiveBits();
+        int maxQ = ClosedLoopQuantizer.maxQ(bits);
+        float inv = 1.0f / maxQ;
+        int[] q = new int[n];
+        float prev = 0f;
+        for (int i = 0; i < n; i++) {
+            q[i] = ClosedLoopQuantizer.quantize(norm[i] - prev, maxQ);
+            prev = ClosedLoopQuantizer.reconstruct(prev, q[i], inv);
+        }
+        byte[] payload = ClosedLoopQuantizer.pack(q, bits, profile.deflaterLevel());
+        return new CompressedTraceBlock(tb.traceId(), min, max, n, payload);
     }
 
     public static TraceBlock decompress(CompressedTraceBlock cb) {
-        // 1) inflar bytes
-        byte[] rawBytes = inflate(cb.payload());
-
-        // 2) bytes -> short[]
-        short[] q = bytesToShorts(rawBytes, cb.samplesPerTrace());
-
-        // 3) dequantizar
-        float[] deltasNorm = LinearQuantizer.decode(q);
-
-        // 4) delta decode
-        float[] norm = Preprocessing.deltaDecode(deltasNorm);
-
-        // 5) denormalizar usando min/max
+        if (!ClosedLoopQuantizer.isClosedLoop(cb.payload())) {
+            return decompressLegacy(cb);
+        }
+        int n = cb.samplesPerTrace();
+        int bits = ClosedLoopQuantizer.storedBits(cb.payload());
+        int[] q = ClosedLoopQuantizer.unpack(cb.payload(), n);
+        float inv = 1.0f / ClosedLoopQuantizer.maxQ(bits);
+        float[] norm = new float[n];
+        float prev = 0f;
+        for (int i = 0; i < n; i++) {
+            prev = ClosedLoopQuantizer.reconstruct(prev, q[i], inv);
+            norm[i] = prev;
+        }
         float[] samples = Preprocessing.denormalizeFromMinusOneToOne(norm, cb.min(), cb.max());
+        return new TraceBlock(cb.traceId(), samples);
+    }
 
+    /**
+     * Decoder for payloads written before the closed-loop revision (raw zlib stream, open-loop
+     * delta, 16-bit quantization). Kept so existing .sdc v2 files remain readable; files written
+     * with fewer than 16 bits by that version cannot be decoded correctly because the bit depth
+     * was never stored.
+     */
+    static TraceBlock decompressLegacy(CompressedTraceBlock cb) {
+        byte[] rawBytes = inflate(cb.payload());
+        short[] q = bytesToShorts(rawBytes, cb.samplesPerTrace());
+        float[] deltasNorm = LinearQuantizer.decode(q);
+        float[] norm = Preprocessing.deltaDecode(deltasNorm);
+        float[] samples = Preprocessing.denormalizeFromMinusOneToOne(norm, cb.min(), cb.max());
         return new TraceBlock(cb.traceId(), samples);
     }
 

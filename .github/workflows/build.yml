@@ -1,0 +1,24 @@
+name: build
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  maven:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Build and test (all Java modules)
+        run: mvn -B -ntp verify
+      - name: Benchmark smoke run (tiny preset, neural model included)
+        run: |
+          java -jar sdc-bench/target/sdc-bench-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+            --presets tiny --warmup 0 --iterations 1 --rd --rd-bits 6,10 --out target/bench-smoke
+          cat target/bench-smoke/summary.md

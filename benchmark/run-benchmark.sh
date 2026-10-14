@@ -4,8 +4,9 @@
 #   ./benchmark/run-benchmark.sh                     # presets small + medium, 2 warmups, 5 iterations
 #   PRESETS=small ITERATIONS=3 ./benchmark/run-benchmark.sh
 #   SEGY=/data/F3.sgy PRESETS=none ./benchmark/run-benchmark.sh
+#   RD=1 ./benchmark/run-benchmark.sh                # + rate–distortion sweep (rd.csv)
 #
-# Variables: PRESETS, SEGY, WARMUP, ITERATIONS, BLOCK, HEAP, LABEL, OUT, SKIP_BUILD
+# Variables: PRESETS, SEGY, WARMUP, ITERATIONS, BLOCK, HEAP, LABEL, OUT, SKIP_BUILD, MODEL, RD
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -73,6 +74,7 @@ HW="$OUT/hardware.txt"
   echo "presets: $PRESETS"
   echo "segy: ${SEGY:-none}"
   echo "warmup: $WARMUP  iterations: $ITERATIONS  block3d: $BLOCK  heap: $HEAP"
+  echo "model: ${MODEL:-auto}  rd_sweep: ${RD:-0}"
 } > "$HW"
 echo "[run] hardware -> $HW"
 
@@ -80,6 +82,8 @@ echo "[run] hardware -> $HW"
 ARGS=(--presets "$PRESETS" --data-dir "$DATA_DIR" --out "$OUT"
       --warmup "$WARMUP" --iterations "$ITERATIONS" --block "$BLOCK"
       --label "$LABEL" --git-commit "$(git rev-parse --short HEAD 2>/dev/null || echo unknown)")
+ARGS+=(--model "${MODEL:-auto}")
+if [[ "${RD:-0}" == "1" ]]; then ARGS+=(--rd); fi
 if [[ -n "${SEGY:-}" ]]; then
   IFS=',' read -ra FILES <<< "$SEGY"
   for f in "${FILES[@]}"; do ARGS+=(--segy "$f"); done

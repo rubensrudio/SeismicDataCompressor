@@ -1,0 +1,108 @@
+[bench] Neural model sdc-ai/models/sdc-ae-v1.sdcnn sha256=b2ba8ca4ae7d805a2c6496627d6db037b4d8dad18523e58884c89f6e9a611665
+[bench] SDC benchmark | warmup=2 iterations=5 block=[8, 8, 0] out=/home/claude/seismicdatacompressor/benchmark/results/2026-10-14_linux-x86_64-2cpu
+[bench] Generating synthetic-medium (128 x 128 x 1000) -> /home/claude/seismicdatacompressor/benchmark/data/synthetic-medium.sgy
+[bench] Dataset synthetic-small  sha256=0e6036582f8db53226e33c9b4b2e87a72204f6c3b974415d304fe2e8dc7401e7  [verified]
+[bench]   sdc-2d             HIGH_QUALITY     ratio=   1.95:1  comp=    76.1 ms  decomp=    14.6 ms  SNR=87.26 dB
+[bench]   sdc-2d             BALANCED         ratio=   2.47:1  comp=    80.7 ms  decomp=    14.0 ms  SNR=63.18 dB
+[bench]   sdc-2d             HIGH_COMPRESSION ratio=   4.45:1  comp=    42.1 ms  decomp=    12.5 ms  SNR=39.02 dB
+[bench]   sdc-3d             HIGH_QUALITY     ratio=   2.32:1  comp=    57.4 ms  decomp=    17.0 ms  SNR=86.36 dB
+[bench]   sdc-3d             BALANCED         ratio=   3.17:1  comp=    98.7 ms  decomp=    13.1 ms  SNR=62.27 dB
+[bench]   sdc-3d             HIGH_COMPRESSION ratio=   5.85:1  comp=    35.3 ms  decomp=    13.0 ms  SNR=38.13 dB
+[bench]   neural-hybrid      HIGH_QUALITY     ratio=   2.43:1  comp=  3285.4 ms  decomp=  2093.3 ms  SNR=84.69 dB
+[bench]   neural-hybrid      BALANCED         ratio=   3.30:1  comp=  2847.1 ms  decomp=  2022.9 ms  SNR=60.61 dB
+[bench]   neural-hybrid      HIGH_COMPRESSION ratio=   6.23:1  comp=  2707.3 ms  decomp=  2089.3 ms  SNR=36.47 dB
+[bench]   uniform-quant      HIGH_QUALITY     ratio=   2.27:1  comp=    60.2 ms  decomp=    10.4 ms  SNR=84.69 dB
+[bench]   uniform-quant      BALANCED         ratio=   3.26:1  comp=    90.4 ms  decomp=     8.7 ms  SNR=60.60 dB
+[bench]   uniform-quant      HIGH_COMPRESSION ratio=   5.27:1  comp=    30.4 ms  decomp=     8.7 ms  SNR=36.46 dB
+[bench]   deflate-6          LOSSLESS         ratio=   1.06:1  comp=    79.1 ms  decomp=    10.0 ms  SNR=inf (lossless)
+[bench]   deflate-9          LOSSLESS         ratio=   1.06:1  comp=    77.2 ms  decomp=    10.2 ms  SNR=inf (lossless)
+[bench]   shuffle+deflate-9  LOSSLESS         ratio=   1.19:1  comp=   266.2 ms  decomp=     7.4 ms  SNR=inf (lossless)
+[bench] Rate?distortion sweep on synthetic-small, bits=[4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16]
+[bench]   neural prediction computed in 2.7 s
+[bench]   rd sdc-3d         bits= 4   1.433 bits/sample  SNR= 13.32 dB
+[bench]   rd sdc-3d         bits= 5   2.552 bits/sample  SNR= 19.58 dB
+[bench]   rd sdc-3d         bits= 6   3.669 bits/sample  SNR= 25.89 dB
+[bench]   rd sdc-3d         bits= 7   4.702 bits/sample  SNR= 32.04 dB
+[bench]   rd sdc-3d         bits= 8   5.465 bits/sample  SNR= 38.13 dB
+[bench]   rd sdc-3d         bits= 9   7.795 bits/sample  SNR= 44.18 dB
+[bench]   rd sdc-3d         bits=10   8.717 bits/sample  SNR= 50.22 dB
+[bench]   rd sdc-3d         bits=11   9.501 bits/sample  SNR= 56.26 dB
+[bench]   rd sdc-3d         bits=12  10.068 bits/sample  SNR= 62.27 dB
+[bench]   rd sdc-3d         bits=14  12.148 bits/sample  SNR= 74.32 dB
+[bench]   rd sdc-3d         bits=16  13.793 bits/sample  SNR= 86.36 dB
+[bench]   rd uniform-quant  bits= 4   1.155 bits/sample  SNR= 12.31 dB
+[bench]   rd uniform-quant  bits= 5   2.454 bits/sample  SNR= 17.93 dB
+[bench]   rd uniform-quant  bits= 6   3.769 bits/sample  SNR= 24.21 dB
+[bench]   rd uniform-quant  bits= 7   4.983 bits/sample  SNR= 30.37 dB
+[bench]   rd uniform-quant  bits= 8   6.074 bits/sample  SNR= 36.46 dB
+[bench]   rd uniform-quant  bits= 9   7.991 bits/sample  SNR= 42.52 dB
+[bench]   rd uniform-quant  bits=10   8.639 bits/sample  SNR= 48.55 dB
+[bench]   rd uniform-quant  bits=11   9.157 bits/sample  SNR= 54.59 dB
+[bench]   rd uniform-quant  bits=12   9.723 bits/sample  SNR= 60.60 dB
+[bench]   rd uniform-quant  bits=14  11.850 bits/sample  SNR= 72.65 dB
+[bench]   rd uniform-quant  bits=16  14.099 bits/sample  SNR= 84.69 dB
+[bench]   rd neural-hybrid  bits= 4   0.789 bits/sample  SNR= 13.76 dB
+[bench]   rd neural-hybrid  bits= 5   1.998 bits/sample  SNR= 17.96 dB
+[bench]   rd neural-hybrid  bits= 6   3.007 bits/sample  SNR= 24.21 dB
+[bench]   rd neural-hybrid  bits= 7   4.086 bits/sample  SNR= 30.38 dB
+[bench]   rd neural-hybrid  bits= 8   5.134 bits/sample  SNR= 36.47 dB
+[bench]   rd neural-hybrid  bits= 9   5.898 bits/sample  SNR= 42.51 dB
+[bench]   rd neural-hybrid  bits=10   7.921 bits/sample  SNR= 48.56 dB
+[bench]   rd neural-hybrid  bits=11   8.882 bits/sample  SNR= 54.59 dB
+[bench]   rd neural-hybrid  bits=12   9.650 bits/sample  SNR= 60.61 dB
+[bench]   rd neural-hybrid  bits=14  11.077 bits/sample  SNR= 72.65 dB
+[bench]   rd neural-hybrid  bits=16  13.167 bits/sample  SNR= 84.69 dB
+[bench]   rd neural-only    bits= 0   0.450 bits/sample  SNR= 13.13 dB
+[bench] Dataset synthetic-medium  sha256=0b6389d128a2a1a08ebd959fbb87ac583ed60beaf473fd3c3d122fa6fd139e26  [verified]
+[bench]   sdc-2d             HIGH_QUALITY     ratio=   2.06:1  comp=  1712.2 ms  decomp=   396.1 ms  SNR=85.97 dB
+[bench]   sdc-2d             BALANCED         ratio=   2.69:1  comp=  2394.2 ms  decomp=   372.2 ms  SNR=61.88 dB
+[bench]   sdc-2d             HIGH_COMPRESSION ratio=   4.97:1  comp=   937.4 ms  decomp=   253.1 ms  SNR=37.74 dB
+[bench]   sdc-3d             HIGH_QUALITY     ratio=   2.38:1  comp=  1598.5 ms  decomp=   373.5 ms  SNR=85.22 dB
+[bench]   sdc-3d             BALANCED         ratio=   3.27:1  comp=  3479.2 ms  decomp=   280.6 ms  SNR=61.13 dB
+[bench]   sdc-3d             HIGH_COMPRESSION ratio=   6.06:1  comp=  1038.0 ms  decomp=   315.7 ms  SNR=36.99 dB
+[bench]   neural-hybrid      HIGH_QUALITY     ratio=   2.46:1  comp= 87880.4 ms  decomp= 65684.3 ms  SNR=84.36 dB
+[bench]   neural-hybrid      BALANCED         ratio=   3.33:1  comp= 85512.0 ms  decomp= 67474.9 ms  SNR=60.27 dB
+[bench]   neural-hybrid      HIGH_COMPRESSION ratio=   6.36:1  comp= 82618.8 ms  decomp= 62227.4 ms  SNR=36.13 dB
+[bench]   uniform-quant      HIGH_QUALITY     ratio=   2.29:1  comp=  1351.2 ms  decomp=   226.6 ms  SNR=84.36 dB
+[bench]   uniform-quant      BALANCED         ratio=   3.27:1  comp=  2939.3 ms  decomp=   171.6 ms  SNR=60.27 dB
+[bench]   uniform-quant      HIGH_COMPRESSION ratio=   5.38:1  comp=   889.7 ms  decomp=   189.3 ms  SNR=36.13 dB
+[bench]   deflate-6          LOSSLESS         ratio=   1.06:1  comp=  2676.0 ms  decomp=   339.8 ms  SNR=inf (lossless)
+[bench]   deflate-9          LOSSLESS         ratio=   1.06:1  comp=  2697.1 ms  decomp=   337.4 ms  SNR=inf (lossless)
+[bench]   shuffle+deflate-9  LOSSLESS         ratio=   1.19:1  comp=  8893.7 ms  decomp=   130.3 ms  SNR=inf (lossless)
+[bench] Rate?distortion sweep on synthetic-medium, bits=[4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16]
+[bench]   neural prediction computed in 79.2 s
+[bench]   rd sdc-3d         bits= 4   1.122 bits/sample  SNR= 12.60 dB
+[bench]   rd sdc-3d         bits= 5   2.236 bits/sample  SNR= 18.44 dB
+[bench]   rd sdc-3d         bits= 6   3.327 bits/sample  SNR= 24.74 dB
+[bench]   rd sdc-3d         bits= 7   4.389 bits/sample  SNR= 30.90 dB
+[bench]   rd sdc-3d         bits= 8   5.285 bits/sample  SNR= 36.99 dB
+[bench]   rd sdc-3d         bits= 9   7.449 bits/sample  SNR= 43.04 dB
+[bench]   rd sdc-3d         bits=10   8.335 bits/sample  SNR= 49.08 dB
+[bench]   rd sdc-3d         bits=11   9.170 bits/sample  SNR= 55.11 dB
+[bench]   rd sdc-3d         bits=12   9.737 bits/sample  SNR= 61.13 dB
+[bench]   rd sdc-3d         bits=14  11.396 bits/sample  SNR= 73.18 dB
+[bench]   rd sdc-3d         bits=16  13.456 bits/sample  SNR= 85.22 dB
+[bench]   rd uniform-quant  bits= 4   1.095 bits/sample  SNR= 12.24 dB
+[bench]   rd uniform-quant  bits= 5   2.380 bits/sample  SNR= 17.63 dB
+[bench]   rd uniform-quant  bits= 6   3.662 bits/sample  SNR= 23.88 dB
+[bench]   rd uniform-quant  bits= 7   4.860 bits/sample  SNR= 30.04 dB
+[bench]   rd uniform-quant  bits= 8   5.950 bits/sample  SNR= 36.13 dB
+[bench]   rd uniform-quant  bits= 9   7.885 bits/sample  SNR= 42.18 dB
+[bench]   rd uniform-quant  bits=10   8.542 bits/sample  SNR= 48.22 dB
+[bench]   rd uniform-quant  bits=11   9.095 bits/sample  SNR= 54.25 dB
+[bench]   rd uniform-quant  bits=12   9.699 bits/sample  SNR= 60.27 dB
+[bench]   rd uniform-quant  bits=14  11.721 bits/sample  SNR= 72.32 dB
+[bench]   rd uniform-quant  bits=16  13.964 bits/sample  SNR= 84.36 dB
+[bench]   rd neural-hybrid  bits= 4   0.696 bits/sample  SNR= 13.90 dB
+[bench]   rd neural-hybrid  bits= 5   1.888 bits/sample  SNR= 17.68 dB
+[bench]   rd neural-hybrid  bits= 6   2.889 bits/sample  SNR= 23.88 dB
+[bench]   rd neural-hybrid  bits= 7   3.957 bits/sample  SNR= 30.04 dB
+[bench]   rd neural-hybrid  bits= 8   5.018 bits/sample  SNR= 36.13 dB
+[bench]   rd neural-hybrid  bits= 9   7.029 bits/sample  SNR= 42.18 dB
+[bench]   rd neural-hybrid  bits=10   7.794 bits/sample  SNR= 48.22 dB
+[bench]   rd neural-hybrid  bits=11   8.736 bits/sample  SNR= 54.25 dB
+[bench]   rd neural-hybrid  bits=12   9.548 bits/sample  SNR= 60.27 dB
+[bench]   rd neural-hybrid  bits=14  10.939 bits/sample  SNR= 72.32 dB
+[bench]   rd neural-hybrid  bits=16  13.033 bits/sample  SNR= 84.36 dB
+[bench]   rd neural-only    bits= 0   0.427 bits/sample  SNR= 13.25 dB
+[bench] Results written to /home/claude/seismicdatacompressor/benchmark/results/2026-10-14_linux-x86_64-2cpu
