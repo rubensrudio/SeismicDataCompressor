@@ -327,7 +327,7 @@ public final class BenchmarkRunner {
         List<RdPoint> pts = new ArrayList<>();
         long raw = (long) ds.traceCount() * ds.samplesPerTrace * 4L;
         List<float[]> original = ds.traces.stream().map(TraceBlock::samples).collect(Collectors.toList());
-        log("Rate–distortion sweep on %s, bits=%s", info.name(), Arrays.toString(bitsList));
+        log("Rate-distortion sweep on %s, bits=%s", info.name(), Arrays.toString(bitsList));
 
         for (int bits : bitsList) {
             CompressionProfile profile = new CompressionProfile(bits, 9, 100.0);
