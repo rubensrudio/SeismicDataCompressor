@@ -1,5 +1,7 @@
 # SeismicDataCompressor (SDC)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23379711.svg)](https://doi.org/10.5281/zenodo.23379711)
+
 Lossy and lossless compression of 3D seismic volumes (SEG-Y), with a classical closed-loop
 DPCM codec, a **measured neural (autoencoder) hybrid codec**, a REST API, a web interface and a
 **reproducible benchmark** that compares them with state-of-the-art scientific compressors
@@ -196,9 +198,15 @@ mvn test              # Run all Java tests
 cd sdc-ui && npm test # Run Angular tests
 ```
 
-## License
+## License and citation
 
-Apache License 2.0 — see [`LICENSE`](LICENSE). To cite this software, see [`CITATION.cff`](CITATION.cff).
+Apache License 2.0 — see [`LICENSE`](LICENSE).
+
+Release v0.2.0 is archived on Zenodo: **https://doi.org/10.5281/zenodo.23379711**. Suggested citation:
+
+> Rudio, R. (2026). *SeismicDataCompressor (SDC): seismic volume compression with a reproducible benchmark* (v0.2.0) [Software]. Zenodo. https://doi.org/10.5281/zenodo.23379711
+
+Citation metadata: [`CITATION.cff`](CITATION.cff).
 
 ## Authorship
 

@@ -8,6 +8,10 @@ authors:
     email: rubensrudio@gmail.com
     orcid: "https://orcid.org/0009-0009-7129-0627"
 repository-code: "https://github.com/rubensrudio/SeismicDataCompressor"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23379711
+    description: "Zenodo archive of release v0.2.0"
 license: Apache-2.0
 keywords:
   - seismic
