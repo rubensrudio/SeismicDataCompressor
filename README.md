@@ -1,12 +1,15 @@
-# AI-Enhanced Seismic Data Compressor (Maven Monorepo)
+# SeismicDataCompressor (SDC)
 
-A comprehensive seismic data compression solution with AI enhancement, REST API, and modern web interface.
+Lossy and lossless compression of 3D seismic volumes (SEG-Y), with a classical closed-loop
+DPCM codec, a **measured neural (autoencoder) hybrid codec**, a REST API, a web interface and a
+**reproducible benchmark** that compares them with state-of-the-art scientific compressors
+(ZFP, SZ3).
 
 ## Architecture
 
 ### Modules
 - **`sdc-core`**: Core compression engine with preprocessing pipeline, quantization algorithms, and SDC container I/O (2D/3D support)
-- **`sdc-ai`**: TensorFlow Java integration for AI-enhanced compression (SavedModel loading)
+- **`sdc-ai`**: Neural hybrid codec — autoencoder prediction + bounded residual, trained with TensorFlow and executed in pure Java ([details](sdc-ai/README.md))
 - **`sdc-cli`**: Command-line interface (Picocli) for compress/decompress/inspect operations
 - **`sdc-svc`**: Spring Boot WebFlux microservice with RESTful API
 - **`sdc-ui`**: Angular 18 web interface with Material Design components
@@ -133,16 +136,18 @@ Output will be in `dist/sdc-ui/`
 
 ### sdc-core Module
 - **Preprocessing**: Trace data normalization and conditioning
-- **Quantization**: Linear quantizer with configurable bit depth
+- **Quantization**: Closed-loop DPCM (the encoder predicts from reconstructed samples, so quantization error does not accumulate) with the bit depth stored in each payload
 - **SDC Container**: Custom binary format with header and compressed blocks
 - **2D Support**: Standard trace-by-trace compression
 - **3D Support**: Volume-based blocking (inline/xline/time) for efficient random access
 - **SEG-Y I/O**: Full SEG-Y Rev1 read/write support
 
 ### sdc-ai Module
-- TensorFlow Java runtime integration
-- Autoencoder model loading (SavedModel format)
-- AI-enhanced compression pipeline (experimental)
+- Convolutional autoencoder (32.7k parameters) trained with TensorFlow on synthetic sections; training script and model metadata in `sdc-ai/training` and `sdc-ai/models`
+- Dependency-free `.sdcnn` model format and pure-Java inference, checked against TensorFlow outputs in the tests
+- `NeuralHybridCodec`: int8 latents + uniformly quantized residual, so the maximum error is bounded; a zero-prediction mode isolates what the network contributes
+- TensorFlow Java runtime placeholder (`AeRuntime`), not required by the codec
+- Limitations: trained and evaluated on synthetic data only; 50–200× slower than the classical codecs (see [`sdc-ai/README.md`](sdc-ai/README.md))
 
 ## Project Structure
 
@@ -164,13 +169,19 @@ sdc-parent/
 
 ## Benchmark
 
-A reproducible benchmark (script, deterministic dataset with SHA-256 checksums, hardware capture and committed results) lives in [`benchmark/`](benchmark/README.md):
+A reproducible benchmark (script, deterministic dataset with SHA-256 checksums, hardware capture,
+committed results, rate–distortion sweep and external baselines) lives in
+[`benchmark/`](benchmark/README.md):
 
 ```bash
-./benchmark/run-benchmark.sh    # ~2 min; writes benchmark/results/<date>_<os>-<arch>-<N>cpu/
+./benchmark/run-benchmark.sh          # codec tables
+RD=1 ./benchmark/run-benchmark.sh     # + rate–distortion sweep (rd.csv)
+python benchmark/rd_report.py --results benchmark/results/<run> \
+    --segy synthetic-medium=benchmark/data/synthetic-medium.sgy   # + ZFP/SZ3, BD-rate, charts
 ```
 
-Reference run (Xeon 2.1 GHz, 4 vCPU, OpenJDK 21, 128×128×1000 synthetic volume): `sdc-3d HIGH_QUALITY` reaches 2.24:1 at 58 dB SNR versus 1.06:1 for lossless Deflate. See [`benchmark/README.md`](benchmark/README.md) for the full tables and known issues the benchmark surfaced.
+See [`benchmark/README.md`](benchmark/README.md) for the reference results, the methodology
+and the limitations.
 
 ## Development
 
@@ -184,3 +195,14 @@ Reference run (Xeon 2.1 GHz, 4 vCPU, OpenJDK 21, 128×128×1000 synthetic volume
 mvn test              # Run all Java tests
 cd sdc-ui && npm test # Run Angular tests
 ```
+
+## License
+
+Apache License 2.0 — see [`LICENSE`](LICENSE). To cite this software, see [`CITATION.cff`](CITATION.cff).
+
+## Authorship
+
+SDC is designed and maintained by **Rubens Rudio**, who defined its architecture and
+specifications and reviews every change. AI coding assistants (Claude, by Anthropic) have been
+used for code validation, benchmark generation and implementation work under the author's
+direction; commits produced by the assistant are attributed to it in the Git history.
