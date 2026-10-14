@@ -6,7 +6,7 @@ authors:
   - family-names: Rudio
     given-names: Rubens
     email: rubensrudio@gmail.com
-    # orcid: "https://orcid.org/0000-0000-0000-0000"   # add your ORCID iD here
+    orcid: "https://orcid.org/0009-0009-7129-0627"
 repository-code: "https://github.com/rubensrudio/SeismicDataCompressor"
 license: Apache-2.0
 keywords:
